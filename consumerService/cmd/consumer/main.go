@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/sam9291/go-pubsub-demo/consumer/internal/app"
 	"github.com/sam9291/go-pubsub-demo/consumer/internal/infra"
@@ -22,10 +23,15 @@ func main(){
     panic(1)
   }
   consumer := infra.NewRabbitMqConsumer(*config)
-  err = consumer.StartConsuming()
 
-  if err != nil {
-    fmt.Printf("failed to start consuming. error: %s\n", err)
-    panic(1)
+  for { // Infinite loop
+    err = consumer.StartConsuming()
+
+    if err != nil {
+      fmt.Printf("failed to start consuming, retrying in 1 sec. error: %s\n", err)
+    } else {
+      fmt.Println("consumer disconnected. trying connection")
+    }
+    time.Sleep(1*time.Second)
   }
 }

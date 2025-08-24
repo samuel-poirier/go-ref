@@ -55,11 +55,12 @@ func(publisher *RabbitMqPublisher) StartPublishing() error {
     return err
   }
 
-  forever := make(chan bool)
+  publishStopped := make(chan bool)
 
   go func() {
+    stopping := false
+    for i := 0; !stopping; i++ {
 
-    for i := 0; true; i++ {
       id := uuid.New()
       fmt.Printf("publisher iteration %d. GUID = %s\n", i, &id)
 
@@ -83,13 +84,15 @@ func(publisher *RabbitMqPublisher) StartPublishing() error {
         )
         if err != nil {
           fmt.Printf("failed publishing for iteration %d. error: %s\n", i, err)
+          stopping = true
+          publishStopped <- true
         }
       }
       time.Sleep(2 * time.Second)
     }
 
   }()
-  <-forever
+  <-publishStopped
 
   return nil
 }

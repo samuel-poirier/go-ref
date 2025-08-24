@@ -31,9 +31,6 @@ func (consumer *RabbitMqConsumer) StartConsuming() error {
 
   defer ch.Close()
 
-  if err != nil {
-    return err
-  }
   q, err := ch.QueueDeclare(
     "demo-queue", // name
     true,   // durable
@@ -58,9 +55,10 @@ func (consumer *RabbitMqConsumer) StartConsuming() error {
   if err != nil {
     return err
   }
-  forever := make(chan bool)
+  consumeStopped := make(chan bool)
 
   go func() {
+    fmt.Println("consumer listening for messages...")
     for d := range msgs {
 
       var message publisherintegrationevents.Message
@@ -72,9 +70,12 @@ func (consumer *RabbitMqConsumer) StartConsuming() error {
         fmt.Printf("Received a message with id %s and data %s\n", message.Id, message.Data)
       }
     }
+
+    fmt.Println("consumer stopped")
+    consumeStopped<-true
   }()
 
-  <-forever
+  <-consumeStopped
 
   return nil
 }
