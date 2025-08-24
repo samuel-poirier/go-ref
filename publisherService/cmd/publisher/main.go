@@ -2,24 +2,15 @@ package main
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/sam9291/go-pubsub-demo/publisher/internal/infra"
 )
 
 func main(){
 
   fmt.Println("publisher service starting")
 
-  forever := make(chan bool)
-  go func() {
+  publisher := infra.New()
 
-    for i := 0; true; i++ {
-      id := uuid.New()
-      fmt.Printf("publisher iteration %d. GUID = %s\n", i, &id)
-      time.Sleep(2 * time.Second)
-    }
-
-  }()
-  <-forever
+  publisher.StartPublishing()
 }
