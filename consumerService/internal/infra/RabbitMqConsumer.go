@@ -55,27 +55,21 @@ func (consumer *RabbitMqConsumer) StartConsuming() error {
   if err != nil {
     return err
   }
-  consumeStopped := make(chan bool)
 
-  go func() {
-    fmt.Println("consumer listening for messages...")
-    for d := range msgs {
+  fmt.Println("consumer listening for messages...")
+  for d := range msgs {
 
-      var message publisherintegrationevents.Message
+    var message publisherintegrationevents.Message
 
-      err := json.Unmarshal(d.Body, &message)
-      if err != nil {
-        fmt.Println("failed to unmarshal json message received from rabbitmq")
-      } else {
-        fmt.Printf("Received a message with id %s and data %s\n", message.Id, message.Data)
-      }
+    err := json.Unmarshal(d.Body, &message)
+    if err != nil {
+      fmt.Println("failed to unmarshal json message received from rabbitmq")
+    } else {
+      fmt.Printf("Received a message with id %s and data %s\n", message.Id, message.Data)
     }
+  }
 
-    fmt.Println("consumer stopped")
-    consumeStopped<-true
-  }()
-
-  <-consumeStopped
+  fmt.Println("consumer stopped")
 
   return nil
 }

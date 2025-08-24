@@ -55,44 +55,37 @@ func(publisher *RabbitMqPublisher) StartPublishing() error {
     return err
   }
 
-  publishStopped := make(chan bool)
+  stopping := false
+  for i := 0; !stopping; i++ {
 
-  go func() {
-    stopping := false
-    for i := 0; !stopping; i++ {
+    id := uuid.New()
+    fmt.Printf("publisher iteration %d. GUID = %s\n", i, &id)
 
-      id := uuid.New()
-      fmt.Printf("publisher iteration %d. GUID = %s\n", i, &id)
-
-      message := publisherintegrationevents.Message{
-        Id: id.String(),
-        Data: strconv.Itoa(i),
-      }
-      json, err := json.Marshal(message)
+    message := publisherintegrationevents.Message{
+      Id: id.String(),
+      Data: strconv.Itoa(i),
+    }
+    json, err := json.Marshal(message)
+    if err != nil {
+      fmt.Printf("failed publishing for iteration %d. error: %s\n", i, err)
+    } else {
+      err := ch.Publish(
+        "",
+        q.Name,
+        true,
+        false,
+        amqp.Publishing{
+            ContentType: "application/json",
+            Body:        json,
+        },
+      )
       if err != nil {
         fmt.Printf("failed publishing for iteration %d. error: %s\n", i, err)
-      } else {
-        err := ch.Publish(
-          "",
-          q.Name,
-          true,
-          false,
-          amqp.Publishing{
-              ContentType: "application/json",
-              Body:        json,
-          },
-        )
-        if err != nil {
-          fmt.Printf("failed publishing for iteration %d. error: %s\n", i, err)
-          stopping = true
-          publishStopped <- true
-        }
+        stopping = true
       }
-      time.Sleep(2 * time.Second)
     }
-
-  }()
-  <-publishStopped
+    time.Sleep(2 * time.Second)
+  }
 
   return nil
 }
