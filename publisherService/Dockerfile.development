@@ -1,0 +1,21 @@
+# Stage 1: Base image with Go and Air installed
+FROM golang:1.24-alpine AS dev
+
+# Install required tools (git + build-base for cgo, air for hot reload)
+RUN go install github.com/air-verse/air@v1.62.0
+
+# Set working directory
+WORKDIR /app
+
+# Copy go.mod and go.sum first for dependency caching
+COPY cmd/publisher/go.mod cmd/publisher/go.sum ./
+RUN go mod download
+
+# Copy the rest of the service code
+COPY . .
+
+# Expose app port (adjust if needed, e.g. 8080 or 3000)
+EXPOSE 8080
+
+# Default command runs air for hot reload
+CMD ["air", "-c", ".air.toml"]

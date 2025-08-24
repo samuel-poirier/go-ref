@@ -1,0 +1,34 @@
+services:
+  publisher:
+    image: localhost/go-pubsub-demo-publisher
+    build:
+      context: publisherService
+      dockerfile: Dockerfile.development
+    environment:
+      - GOPROXY=direct
+    ports:
+      - 5000:8080
+    volumes:
+      - ./publisherService:/app        # mount source code
+  consumer:
+    image: localhost/go-pubsub-demo-consumer
+    build:
+      context: consumerService
+      dockerfile: Dockerfile.development
+    environment:
+      - GOPROXY=direct
+    ports:
+      - 5001:8080
+    volumes:
+      - ./consumerService:/app        # mount source code
+  rabbitmq:
+    image: rabbitmq:4.1.2-management-alpine
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - lab_rabbitmq_data:/var/lib/rabbitmq/
+        - lab_rabbitmq_logs:/var/log/rabbitmq/
+volumes:
+  lab_rabbitmq_data:
+  lab_rabbitmq_logs:
