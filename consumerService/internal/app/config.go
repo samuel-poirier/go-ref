@@ -1,0 +1,41 @@
+package app
+
+import (
+	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v3"
+)
+
+type AppConfig struct {
+  ConnectionStrings struct {
+    RabbitMq string `yaml:"rabbitMq"`
+  } `yaml:"connectionStrings"`
+}
+
+func LoadAppConfig(path string) (*AppConfig, error){
+  var config AppConfig
+    filename, err := filepath.Abs(path)
+
+    if err != nil {
+      return nil, err
+    }
+
+    yamlFile, err := os.ReadFile(filename)
+
+    if err != nil {
+      return nil, err
+    }
+
+    if err != nil {
+        panic(err)
+    }
+
+    err = yaml.Unmarshal(yamlFile, &config)
+
+    if err != nil {
+      return nil, err
+    }
+
+    return &config, nil
+}

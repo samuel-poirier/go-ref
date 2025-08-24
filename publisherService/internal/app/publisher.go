@@ -1,5 +1,5 @@
 package app
 
 type Publisher interface {
-  StartPublishing()
+  StartPublishing() error
 }

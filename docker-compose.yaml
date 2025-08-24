@@ -1,6 +1,8 @@
 services:
   publisher:
     image: localhost/go-pubsub-demo-publisher
+    depends_on:
+      - rabbitmq
     build:
       context: publisherService
       dockerfile: Dockerfile.development
@@ -9,9 +11,11 @@ services:
     ports:
       - 5000:8080
     volumes:
-      - ./publisherService:/app        # mount source code
+      - .:/app        # mount source code
   consumer:
     image: localhost/go-pubsub-demo-consumer
+    depends_on:
+      - rabbitmq
     build:
       context: consumerService
       dockerfile: Dockerfile.development
@@ -20,7 +24,7 @@ services:
     ports:
       - 5001:8080
     volumes:
-      - ./consumerService:/app        # mount source code
+      - .:/app        # mount source code
   rabbitmq:
     image: rabbitmq:4.1.2-management-alpine
     ports:

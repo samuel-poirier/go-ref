@@ -1,9 +1,9 @@
 # .air.toml
 
 [build]
-  cmd = "cd /app/cmd/publisher && go build -o /tmp/main"
+  cmd = "cd /app/publisherService/cmd/publisher && go build -o /tmp/main"
   bin = "/tmp/main"
-  full_bin = "APP_ENV=dev /tmp/main"
+  full_bin = "APP_ENV=dev APP_CONFIG=/app/publisherService/configs/config.yaml /tmp/main"
   include_ext = ["go"]
   exclude_dir = ["tmp"]
   exclude_file = ["*_test.go"]

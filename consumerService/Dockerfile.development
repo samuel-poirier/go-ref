@@ -5,7 +5,7 @@ FROM golang:1.24-alpine AS dev
 RUN go install github.com/air-verse/air@v1.62.0
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/consumerService
 
 # Copy go.mod and go.sum first for dependency caching
 COPY go.mod go.sum ./

@@ -1,5 +1,5 @@
 package app
 
 type Consumer interface {
-  StartConsuming()
+  StartConsuming() error
 }
