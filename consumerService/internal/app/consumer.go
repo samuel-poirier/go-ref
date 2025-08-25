@@ -1,5 +1,7 @@
 package app
 
+import "context"
+
 type Consumer interface {
-  StartConsuming() error
+  StartConsuming(ctx context.Context) error
 }

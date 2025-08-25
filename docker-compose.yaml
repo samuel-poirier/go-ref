@@ -8,8 +8,6 @@ services:
       dockerfile: Dockerfile.development
     environment:
       - GOPROXY=direct
-    ports:
-      - 5000:8080
     volumes:
       - .:/app        # mount source code
   consumer:
@@ -21,14 +19,11 @@ services:
       dockerfile: Dockerfile.development
     environment:
       - GOPROXY=direct
-    ports:
-      - 5001:8080
     volumes:
       - .:/app        # mount source code
   rabbitmq:
     image: rabbitmq:4.1.2-management-alpine
     ports:
-        - 5672:5672
         - 15672:15672
     volumes:
         - lab_rabbitmq_data:/var/lib/rabbitmq/

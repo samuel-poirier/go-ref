@@ -1,4 +1,4 @@
-package publisherintegrationevents
+package events
 
 type Message struct {
   Id string `json:"id"`

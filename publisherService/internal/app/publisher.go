@@ -1,5 +1,7 @@
 package app
 
+import "context"
+
 type Publisher interface {
-  StartPublishing() error
+	StartPublishing(context.Context) error
 }

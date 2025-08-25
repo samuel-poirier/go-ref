@@ -1,81 +1,86 @@
 package infra
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
+	"log/slog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sam9291/go-pubsub-demo/consumer/internal/app"
-	publisherintegrationevents "github.com/sam9291/go-pubsub-demo/publisherIntegrationEvents"
+	events "github.com/sam9291/go-pubsub-demo/events"
 )
 
 type RabbitMqConsumer struct {
-  connectionString string
+	connectionString string
+	queueName        string
+	logger           *slog.Logger
 }
 
-func (consumer *RabbitMqConsumer) StartConsuming() error {
+func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context) error {
 
-  conn, err := amqp.Dial(consumer.connectionString)
+	conn, err := amqp.Dial(consumer.connectionString)
 
-  if err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
 
-  defer conn.Close()
+	defer conn.Close()
 
-  ch, err := conn.Channel()
+	ch, err := conn.Channel()
 
-  if err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
 
-  defer ch.Close()
+	defer ch.Close()
 
-  q, err := ch.QueueDeclare(
-    "demo-queue", // name
-    true,   // durable
-    false,   // delete when unused
-    false,   // exclusive
-    false,   // no-wait
-    nil,     // arguments
-  )
+	q, err := ch.QueueDeclare(
+		consumer.queueName, // name
+		true,               // durable
+		false,              // delete when unused
+		false,              // exclusive
+		false,              // no-wait
+		nil,                // arguments
+	)
 
-  if err != nil {
-    return err
-  }
-  msgs, err := ch.Consume(
-    q.Name, // queue
-    "",     // consumer
-    true,   // auto-ack
-    false,  // exclusive
-    false,  // no-local
-    false,  // no-wait
-    nil,    // args
-  )
-  if err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	if err != nil {
+		return err
+	}
 
-  fmt.Println("consumer listening for messages...")
-  for d := range msgs {
+	consumer.logger.Info("consumer listening for messages...")
+	for d := range msgs {
 
-    var message publisherintegrationevents.Message
+		var message events.Message
 
-    err := json.Unmarshal(d.Body, &message)
-    if err != nil {
-      fmt.Println("failed to unmarshal json message received from rabbitmq")
-    } else {
-      fmt.Printf("Received a message with id %s and data %s\n", message.Id, message.Data)
-    }
-  }
+		err := json.Unmarshal(d.Body, &message)
+		if err != nil {
+			consumer.logger.Error("failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
+		} else {
+			consumer.logger.Info("Received a message", slog.String("id", message.Id), slog.String("data", message.Data))
+		}
+	}
 
-  fmt.Println("consumer stopped")
+	consumer.logger.Info("consumer stopped")
 
-  return nil
+	return nil
 }
 
-func NewRabbitMqConsumer(config app.AppConfig) app.Consumer {
+func NewRabbitMqConsumer(config app.AppConfig, logger *slog.Logger) app.Consumer {
 	return &RabbitMqConsumer{
-    connectionString: config.ConnectionStrings.RabbitMq,
-  }
+		connectionString: config.ConnectionStrings.RabbitMq,
+		queueName:        config.QueueName,
+		logger:           logger,
+	}
 }

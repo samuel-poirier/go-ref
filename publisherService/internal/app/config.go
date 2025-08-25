@@ -8,34 +8,35 @@ import (
 )
 
 type AppConfig struct {
-  ConnectionStrings struct {
-    RabbitMq string `yaml:"rabbitMq"`
-  } `yaml:"connectionStrings"`
+	QueueName         string `yaml:"queueName"`
+	ConnectionStrings struct {
+		RabbitMq string `yaml:"rabbitMq"`
+	} `yaml:"connectionStrings"`
 }
 
-func LoadAppConfig(path string) (*AppConfig, error){
-  var config AppConfig
-    filename, err := filepath.Abs(path)
+func LoadAppConfig(path string) (*AppConfig, error) {
+	var config AppConfig
+	filename, err := filepath.Abs(path)
 
-    if err != nil {
-      return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
-    yamlFile, err := os.ReadFile(filename)
+	yamlFile, err := os.ReadFile(filename)
 
-    if err != nil {
-      return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 
-    err = yaml.Unmarshal(yamlFile, &config)
+	err = yaml.Unmarshal(yamlFile, &config)
 
-    if err != nil {
-      return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
-    return &config, nil
+	return &config, nil
 }

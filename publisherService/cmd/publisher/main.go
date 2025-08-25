@@ -1,36 +1,37 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log/slog"
 	"os"
-	"time"
+	"os/signal"
 
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/app"
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/infra"
 )
 
-func main(){
+func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-  fmt.Println("publisher service starting")
+	// todo: refactore to use go env module to load from .env
+	configPath := os.Getenv("APP_CONFIG")
+	logger.Info("loading application config", slog.String("APP_CONFIG", configPath))
+	config, err := app.LoadAppConfig(configPath)
 
-  configPath := os.Getenv("APP_CONFIG")
+	if err != nil {
+		logger.Error("failed to load app config", slog.Any("error", err))
+		panic(1)
+	}
 
-  fmt.Printf("loading application config from %s\n", configPath)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
-  config, err := app.LoadAppConfig(configPath)
-  if err != nil {
-    fmt.Printf("failed to load app config. error: %s\n", err)
-    panic(1)
-  }
+	publisher := infra.NewRabbitMqPublisher(*config, logger)
 
-  publisher := infra.NewRabbitMqPublisher(*config)
+	app := app.New(*config, logger, &publisher)
 
-  for { // Infinite loop
-    err = publisher.StartPublishing()
-    if err != nil {
-      fmt.Printf("failed to start publishing, retrying to reconnect in 1 sec. error: %s\n", err)
-    }
+	if err := app.Start(ctx); err != nil {
+		logger.Error("failed to start app", slog.Any("error", err))
+	}
 
-    time.Sleep(1*time.Second)
-  }
 }

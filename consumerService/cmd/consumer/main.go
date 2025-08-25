@@ -1,37 +1,38 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log/slog"
 	"os"
-	"time"
+	"os/signal"
 
 	"github.com/sam9291/go-pubsub-demo/consumer/internal/app"
 	"github.com/sam9291/go-pubsub-demo/consumer/internal/infra"
 )
 
-func main(){
+func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-  fmt.Println("consumer service starting")
+	// todo: refactore to use go env module to load from .env
+	configPath := os.Getenv("APP_CONFIG")
 
-  configPath := os.Getenv("APP_CONFIG")
+	logger.Info("loading application config", slog.String("APP_CONFIG", configPath))
 
-  fmt.Printf("loading application config from %s\n", configPath)
+	config, err := app.LoadAppConfig(configPath)
+	if err != nil {
+		logger.Error("failed to load app config", slog.Any("error", err))
+		panic(1)
+	}
 
-  config, err := app.LoadAppConfig(configPath)
-  if err != nil {
-    fmt.Printf("failed to load app config. error: %s\n", err)
-    panic(1)
-  }
-  consumer := infra.NewRabbitMqConsumer(*config)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
-  for { // Infinite loop
-    err = consumer.StartConsuming()
+	consumer := infra.NewRabbitMqConsumer(*config, logger)
 
-    if err != nil {
-      fmt.Printf("failed to start consuming, retrying in 1 sec. error: %s\n", err)
-    } else {
-      fmt.Println("consumer disconnected. trying connection")
-    }
-    time.Sleep(1*time.Second)
-  }
+	app := app.New(*config, logger, &consumer)
+
+	if err := app.Start(ctx); err != nil {
+		logger.Error("failed to start app", slog.Any("error", err))
+	}
+
 }

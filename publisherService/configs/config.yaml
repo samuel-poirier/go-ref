@@ -2,3 +2,4 @@ connectionStrings:
   ## In a real world, this should be a secret, not in a committed config file
   ## this is just a placeholder
   rabbitMq: amqp://guest:guest@rabbitmq:5672
+queueName: demo-queue
