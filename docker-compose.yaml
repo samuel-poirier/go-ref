@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile.development
     environment:
       - GOPROXY=direct
+      - APP_ENV=dev
+      - APP_CONFIG=/app/publisherService/configs/config.yaml
     volumes:
       - .:/app        # mount source code
   consumer:
@@ -19,6 +21,8 @@ services:
       dockerfile: Dockerfile.development
     environment:
       - GOPROXY=direct
+      - APP_ENV=dev
+      - APP_CONFIG=/app/consumerService/configs/config.yaml
     volumes:
       - .:/app        # mount source code
   rabbitmq:

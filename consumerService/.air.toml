@@ -3,7 +3,7 @@
 [build]
   cmd = "cd /app/consumerService/cmd/consumer && go build -o /tmp/main"
   bin = "/tmp/main"
-  full_bin = "APP_ENV=dev APP_CONFIG=/app/consumerService/configs/config.yaml /tmp/main"
+  full_bin = "/tmp/main"
   include_ext = ["go"]
   exclude_dir = ["tmp"]
   exclude_file = ["*_test.go"]

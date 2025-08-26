@@ -13,10 +13,7 @@ import (
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	// todo: refactore to use go env module to load from .env
 	configPath := os.Getenv("APP_CONFIG")
-
-	logger.Info("loading application config", slog.String("APP_CONFIG", configPath))
 
 	config, err := app.LoadAppConfig(configPath)
 	if err != nil {

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -36,6 +37,14 @@ func LoadAppConfig(path string) (*AppConfig, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if config.QueueName == "" {
+		return nil, fmt.Errorf("queue name not configured")
+	}
+
+	if config.ConnectionStrings.RabbitMq == "" {
+		return nil, fmt.Errorf("rabbitmq connection string not configured")
 	}
 
 	return &config, nil
