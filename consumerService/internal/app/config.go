@@ -29,10 +29,6 @@ func LoadAppConfig(path string) (*AppConfig, error) {
 		return nil, err
 	}
 
-	if err != nil {
-		panic(err)
-	}
-
 	err = yaml.Unmarshal(yamlFile, &config)
 
 	if err != nil {

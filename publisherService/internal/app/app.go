@@ -2,18 +2,22 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
+
+	"github.com/sam9291/go-pubsub-demo/publisher/internal/domain"
 )
 
 type App struct {
 	config    AppConfig
 	logger    *slog.Logger
-	publisher *Publisher
+	publisher *domain.Publisher
 }
 
-func New(config AppConfig, logger *slog.Logger, publisher *Publisher) *App {
+func New(config AppConfig, logger *slog.Logger, publisher *domain.Publisher) *App {
 	return &App{
 		config:    config,
 		logger:    logger,
@@ -33,7 +37,7 @@ func (a *App) Start(ctx context.Context) error {
 	stopping := false
 	go func() {
 		for !stopping { // loop until cancel signal
-			err := publisher.StartPublishing(ctx)
+			err := publisher.Initialize(ctx)
 			if err != nil {
 				a.logger.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
 			}
@@ -42,6 +46,38 @@ func (a *App) Start(ctx context.Context) error {
 		}
 	}()
 
+	router, err := a.loadRoutes()
+
+	if err != nil {
+		return fmt.Errorf("failed when loading routes: %w", err)
+	}
+
+	port := 8080
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: router,
+	}
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- fmt.Errorf("failed to listen and serve: %w", err)
+		}
+
+		close(errCh)
+	}()
+
+	a.logger.Info("server running", slog.Int("port", port))
+
+	select {
+	// Wait until we receive SIGINT (ctrl+c on cli)
+	case <-ctx.Done():
+		break
+	case err := <-errCh:
+		return err
+	}
 	// Wait until we receive SIGINT (ctrl+c on cli)
 	<-ctx.Done()
 	stopping = true

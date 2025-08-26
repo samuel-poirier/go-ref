@@ -24,7 +24,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	publisher := infra.NewRabbitMqPublisher(*config, logger)
+	publisher := infra.NewRabbitMqPublisher(config.ConnectionStrings.RabbitMq, config.QueueName, logger)
 
 	app := app.New(*config, logger, &publisher)
 
