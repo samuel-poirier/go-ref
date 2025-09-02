@@ -54,5 +54,6 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | Database transactions | |
 | Database migrations | |
 | Database data seeding | |
+| Saga Pattern | |
 | Unit Test | |
 | Integration Test | |
