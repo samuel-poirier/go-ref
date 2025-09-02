@@ -10,3 +10,7 @@ type Publisher interface {
 	Initialize(context.Context) error
 	Publish(events.Message) error
 }
+
+type BackgroundWorker interface {
+	Start(context.Context) error
+}

@@ -44,6 +44,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | Middleware | x |
 | Dependency Injection | x |
 | Structured Logging | x |
+| OpenTelemetry Instrumentation | |
 | Message Broker Publisher | x |
 | Message Broker Consumer | x |
 | Message Broker Outbox Pattern | |
