@@ -55,5 +55,8 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | Database migrations | |
 | Database data seeding | |
 | Saga Pattern | |
+| Unit of Work Pattern | |
+| OpenAPI Documentation | |
+| Problem Details+json validation | |
 | Unit Test | |
 | Integration Test | |
