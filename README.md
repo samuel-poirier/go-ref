@@ -58,5 +58,5 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | Unit of Work Pattern | |
 | OpenAPI Documentation | |
 | Problem Details+json validation | |
-| Unit Test | |
+| Unit Test | x |
 | Integration Test | |

@@ -16,7 +16,7 @@ type AppConfig struct {
 }
 
 func LoadAppConfig(path string) (*AppConfig, error) {
-	var config AppConfig
+	var config *AppConfig
 	filename, err := filepath.Abs(path)
 
 	if err != nil {
@@ -35,13 +35,27 @@ func LoadAppConfig(path string) (*AppConfig, error) {
 		return nil, err
 	}
 
-	if config.QueueName == "" {
-		return nil, fmt.Errorf("queue name not configured")
+	err = config.Validate()
+
+	if err != nil {
+		return nil, err
 	}
 
-	if config.ConnectionStrings.RabbitMq == "" {
-		return nil, fmt.Errorf("rabbitmq connection string not configured")
+	return config, nil
+}
+
+func (c *AppConfig) Validate() error {
+	if c == nil {
+		return fmt.Errorf("nil app config")
 	}
 
-	return &config, nil
+	if c.QueueName == "" {
+		return fmt.Errorf("queue name not configured")
+	}
+
+	if c.ConnectionStrings.RabbitMq == "" {
+		return fmt.Errorf("rabbitmq connection string not configured")
+	}
+
+	return nil
 }
