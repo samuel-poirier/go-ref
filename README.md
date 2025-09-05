@@ -59,4 +59,4 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | OpenAPI Documentation | |
 | Problem Details+json validation | |
 | Unit Test | x |
-| Integration Test | |
+| Integration Test | x |

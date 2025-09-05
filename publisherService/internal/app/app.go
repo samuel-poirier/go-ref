@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/domain"
@@ -16,21 +17,31 @@ type App struct {
 	logger            *slog.Logger
 	publisher         *domain.Publisher
 	backgroundWorkers *[]domain.BackgroundWorker
+	httpServer        *http.Server
 }
 
-func New(config AppConfig, logger *slog.Logger, publisher *domain.Publisher, workers *[]domain.BackgroundWorker) *App {
+func New(config AppConfig, logger *slog.Logger, publisher *domain.Publisher, workers *[]domain.BackgroundWorker, httpServer *http.Server) *App {
 	return &App{
 		config:            config,
 		logger:            logger,
 		publisher:         publisher,
 		backgroundWorkers: workers,
+		httpServer:        httpServer,
 	}
 }
 
-func (a *App) Start(ctx context.Context) error {
+func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 
 	if a.publisher == nil {
 		return fmt.Errorf("failed to start app with nil publisher")
+	}
+
+	if wg == nil {
+		return fmt.Errorf("failed to start app with nil wait group")
+	}
+
+	if a.httpServer == nil {
+		return fmt.Errorf("failed to start app with nil http server")
 	}
 
 	publisher := *a.publisher
@@ -38,6 +49,7 @@ func (a *App) Start(ctx context.Context) error {
 
 	stopping := false
 	go func() {
+		defer publisher.Close()
 		for !stopping { // loop until cancel signal
 			err := publisher.Initialize(ctx)
 			if err != nil {
@@ -54,11 +66,13 @@ func (a *App) Start(ctx context.Context) error {
 		return fmt.Errorf("failed when loading routes: %w", err)
 	}
 
-	port := 8080
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: router,
+	defaultPort := 8080
+	addr := fmt.Sprintf(":%d", defaultPort)
+	if a.config.Addr != nil {
+		addr = *a.config.Addr
 	}
+	a.httpServer.Addr = addr
+	a.httpServer.Handler = router
 
 	errCh := make(chan error, 1)
 
@@ -74,7 +88,7 @@ func (a *App) Start(ctx context.Context) error {
 	}
 
 	go func() {
-		err := srv.ListenAndServe()
+		err := a.httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- fmt.Errorf("failed to listen and serve: %w", err)
 		}
@@ -82,7 +96,9 @@ func (a *App) Start(ctx context.Context) error {
 		close(errCh)
 	}()
 
-	a.logger.Info("server running", slog.Int("port", port))
+	a.logger.Info("server running", slog.String("port", addr))
+
+	wg.Done()
 
 	select {
 	// Wait until we receive SIGINT (ctrl+c on cli)

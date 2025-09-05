@@ -9,6 +9,7 @@ import (
 type Publisher interface {
 	Initialize(context.Context) error
 	Publish(events.Message) error
+	Close()
 }
 
 type BackgroundWorker interface {

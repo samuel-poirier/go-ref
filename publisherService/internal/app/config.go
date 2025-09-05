@@ -9,6 +9,7 @@ import (
 )
 
 type AppConfig struct {
+	Addr              *string
 	QueueName         string `yaml:"queueName"`
 	ConnectionStrings struct {
 		RabbitMq string `yaml:"rabbitMq"`

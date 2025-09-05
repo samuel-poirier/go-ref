@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/app"
@@ -32,9 +34,11 @@ func main() {
 		infra.NewPeriodicPublisherBackgroundWorker(2*time.Second, &publisher, logger),
 	}
 
-	app := app.New(*config, logger, &publisher, &workers)
+	app := app.New(*config, logger, &publisher, &workers, &http.Server{})
 
-	if err := app.Start(ctx); err != nil {
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	if err := app.Start(ctx, &wg); err != nil {
 		logger.Error("failed to start app", slog.Any("error", err))
 	}
 

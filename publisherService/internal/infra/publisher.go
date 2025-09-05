@@ -16,26 +16,36 @@ type RabbitMqPublisher struct {
 	connectionString string
 	queueName        string
 	logger           *slog.Logger
-	publishingChan   *chan<- events.Message
+	eventChannel     *chan events.Message
 }
 
 func NewRabbitMqPublisher(connectionString, queueName string, logger *slog.Logger) domain.Publisher {
+	eventChannel := make(chan events.Message)
 	return &RabbitMqPublisher{
 		connectionString: connectionString,
 		queueName:        queueName,
 		logger:           logger,
+		eventChannel:     &eventChannel,
 	}
 }
 
 func (publisher *RabbitMqPublisher) Publish(message events.Message) error {
-	if publisher.publishingChan == nil {
+	if publisher.eventChannel == nil {
 		return fmt.Errorf("failed to publish, publishing channel not initialized")
 	}
-	*publisher.publishingChan <- message
+	*publisher.eventChannel <- message
 	return nil
 }
 
+func (publisher *RabbitMqPublisher) Close() {
+	if publisher.eventChannel != nil {
+		close(*publisher.eventChannel)
+	}
+}
 func (publisher *RabbitMqPublisher) Initialize(ctx context.Context) error {
+	if publisher.eventChannel == nil {
+		return fmt.Errorf("failed to initialize publisher with nil publishing channel")
+	}
 
 	conn, err := amqp.Dial(publisher.connectionString)
 
@@ -75,20 +85,16 @@ func (publisher *RabbitMqPublisher) Initialize(ctx context.Context) error {
 	}
 
 	messageBuffer := make([]events.Message, 0)
-	eventChannel := make(chan events.Message)
 	processingChannel := make(chan struct{})
-	var publishingChannel chan<- events.Message = eventChannel
-	publisher.publishingChan = &publishingChannel
 
 	go func() {
-		for message := range eventChannel {
+		for message := range *publisher.eventChannel {
 			messageBuffer = append(messageBuffer, message)
 			go func() { processingChannel <- struct{}{} }()
 		}
 	}()
 
 	defer func() {
-		close(eventChannel)
 		close(processingChannel)
 	}()
 
