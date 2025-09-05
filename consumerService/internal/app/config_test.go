@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnmarshalAndValidateConfig(t *testing.T) {
+func TestAppConfigValidate(t *testing.T) {
 	validConfig := app.AppConfig{
 		QueueName: "a",
 		ConnectionStrings: struct {
