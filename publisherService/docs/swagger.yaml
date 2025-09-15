@@ -1,0 +1,43 @@
+basePath: /
+definitions:
+  events.Message:
+    properties:
+      data:
+        type: string
+      id:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    url: https://github.com/sam9291/go-pubsub-demo
+  description: Example publisher API
+  license:
+    name: MIT
+    url: https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE
+  title: Go PubSub Demo Publisher API
+  version: "1.0"
+paths:
+  /api/v1/hc:
+    get:
+      description: Returns ok if healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+      summary: Health check endpoint
+  /api/v1/hello:
+    get:
+      description: Returns a message that gets published to rabbitmq
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/events.Message'
+      summary: Hello world endpoint
+swagger: "2.0"

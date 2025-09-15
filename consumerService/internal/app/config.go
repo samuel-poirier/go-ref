@@ -2,37 +2,28 @@ package app
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
-	"gopkg.in/yaml.v3"
+	"github.com/joho/godotenv"
+	"github.com/sam9291/go-pubsub-demo/shared/env"
 )
 
 type AppConfig struct {
-	QueueName         string `yaml:"queueName"`
-	ConnectionStrings struct {
-		RabbitMq string `yaml:"rabbitMq"`
-	} `yaml:"connectionStrings"`
+	Addr                     string
+	QueueName                string
+	RabbitMqConnectionString string
 }
 
 func LoadAppConfig(path string) (*AppConfig, error) {
-	var config *AppConfig
-	filename, err := filepath.Abs(path)
+	err := godotenv.Load(path)
 
 	if err != nil {
 		return nil, err
 	}
 
-	yamlFile, err := os.ReadFile(filename)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(yamlFile, &config)
-
-	if err != nil {
-		return nil, err
+	config := AppConfig{
+		Addr:                     fmt.Sprintf(":%s", env.GetEnvOrDefault("APP_PORT", "8081")),
+		QueueName:                env.GetEnvOrDefault("QUEUE_NAME", "demo-queue"),
+		RabbitMqConnectionString: env.GetEnvOrDefault("RABBIT_MQ_CONNECTION_STRING", ""),
 	}
 
 	err = config.Validate()
@@ -41,7 +32,7 @@ func LoadAppConfig(path string) (*AppConfig, error) {
 		return nil, err
 	}
 
-	return config, nil
+	return &config, nil
 }
 
 func (c *AppConfig) Validate() error {
@@ -49,11 +40,15 @@ func (c *AppConfig) Validate() error {
 		return fmt.Errorf("nil app config")
 	}
 
+	if c.Addr == "" {
+		return fmt.Errorf("app port not configured")
+	}
+
 	if c.QueueName == "" {
 		return fmt.Errorf("queue name not configured")
 	}
 
-	if c.ConnectionStrings.RabbitMq == "" {
+	if c.RabbitMqConnectionString == "" {
 		return fmt.Errorf("rabbitmq connection string not configured")
 	}
 

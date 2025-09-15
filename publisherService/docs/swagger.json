@@ -1,0 +1,66 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Example publisher API",
+        "title": "Go PubSub Demo Publisher API",
+        "contact": {
+            "url": "https://github.com/sam9291/go-pubsub-demo"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/hc": {
+            "get": {
+                "description": "Returns ok if healthy",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Health check endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hello": {
+            "get": {
+                "description": "Returns a message that gets published to rabbitmq",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Hello world endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/events.Message"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "events.Message": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

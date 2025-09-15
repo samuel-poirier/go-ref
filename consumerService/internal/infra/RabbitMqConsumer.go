@@ -79,7 +79,7 @@ func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context) error {
 
 func NewRabbitMqConsumer(config app.AppConfig, logger *slog.Logger) app.Consumer {
 	return &RabbitMqConsumer{
-		connectionString: config.ConnectionStrings.RabbitMq,
+		connectionString: config.RabbitMqConnectionString,
 		queueName:        config.QueueName,
 		logger:           logger,
 	}

@@ -11,7 +11,8 @@ services:
     environment:
       - GOPROXY=direct
       - APP_ENV=dev
-      - APP_CONFIG=/app/publisherService/configs/config.yaml
+      - APP_CONFIG=/app/publisherService/configs/.env
+      - RABBIT_MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672
     volumes:
       - .:/app        # mount source code
   consumer:
@@ -21,15 +22,19 @@ services:
     build:
       context: consumerService
       dockerfile: Dockerfile.development
+    ports:
+      - 8081:8081
     environment:
       - GOPROXY=direct
       - APP_ENV=dev
-      - APP_CONFIG=/app/consumerService/configs/config.yaml
+      - APP_CONFIG=/app/consumerService/configs/.env
+      - RABBIT_MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672
     volumes:
       - .:/app        # mount source code
   rabbitmq:
     image: rabbitmq:4.1.2-management-alpine
     ports:
+        - 5672:5672
         - 15672:15672
     volumes:
         - lab_rabbitmq_data:/var/lib/rabbitmq/

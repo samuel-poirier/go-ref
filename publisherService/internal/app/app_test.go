@@ -75,13 +75,9 @@ func TestAppIntegrationTests(t *testing.T) {
 		}
 		addr := ":" + port
 		config := app.AppConfig{
-			Addr:      &addr,
-			QueueName: "queue-name",
-			ConnectionStrings: struct {
-				RabbitMq string "yaml:\"rabbitMq\""
-			}{
-				RabbitMq: rabbitmqUrl,
-			},
+			Addr:                     addr,
+			QueueName:                "queue-name",
+			RabbitMqConnectionString: rabbitmqUrl,
 		}
 		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
 		wg := sync.WaitGroup{}
@@ -114,13 +110,9 @@ func TestAppIntegrationTests(t *testing.T) {
 		}
 		addr := ":" + port
 		config := app.AppConfig{
-			Addr:      &addr,
-			QueueName: "queue-name",
-			ConnectionStrings: struct {
-				RabbitMq string "yaml:\"rabbitMq\""
-			}{
-				RabbitMq: rabbitmqUrl,
-			},
+			Addr:                     addr,
+			QueueName:                "queue-name",
+			RabbitMqConnectionString: rabbitmqUrl,
 		}
 		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
 		wg := sync.WaitGroup{}

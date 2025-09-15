@@ -3,6 +3,7 @@ FROM golang:1.24-alpine AS dev
 
 # Install required tools (git + build-base for cgo, air for hot reload)
 RUN go install github.com/air-verse/air@v1.62.0
+RUN apk add --no-cache git
 
 # Set working directory
 WORKDIR /app/consumerService

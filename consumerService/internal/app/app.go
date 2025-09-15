@@ -2,22 +2,26 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 )
 
 type App struct {
-	config   AppConfig
-	logger   *slog.Logger
-	consumer *Consumer
+	config     AppConfig
+	logger     *slog.Logger
+	consumer   *Consumer
+	httpServer *http.Server
 }
 
-func New(config AppConfig, logger *slog.Logger, consumer *Consumer) *App {
+func New(config AppConfig, logger *slog.Logger, consumer *Consumer, httpServer *http.Server) *App {
 	return &App{
-		config:   config,
-		logger:   logger,
-		consumer: consumer,
+		config:     config,
+		logger:     logger,
+		consumer:   consumer,
+		httpServer: httpServer,
 	}
 }
 
@@ -27,8 +31,12 @@ func (a *App) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to start app with nil consumer")
 	}
 
+	if a.httpServer == nil {
+		return fmt.Errorf("failed to start app with nil http server")
+	}
+
 	consumer := *a.consumer
-	a.logger.Info("publisher service starting")
+	a.logger.Info("consumer service starting")
 
 	stopping := false
 	go func() {
@@ -44,8 +52,35 @@ func (a *App) Start(ctx context.Context) error {
 		}
 	}()
 
+	router, err := a.loadRoutes()
+
+	if err != nil {
+		return fmt.Errorf("failed when loading routes: %w", err)
+	}
+
+	a.httpServer.Addr = a.config.Addr
+	a.httpServer.Handler = router
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		err := a.httpServer.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- fmt.Errorf("failed to listen and serve: %w", err)
+		}
+
+		close(errCh)
+	}()
+
+	a.logger.Info("server running", slog.String("port", a.config.Addr))
+	select {
 	// Wait until we receive SIGINT (ctrl+c on cli)
-	<-ctx.Done()
+	case <-ctx.Done():
+		break
+	case err := <-errCh:
+		return err
+	}
+
 	stopping = true
 
 	a.logger.Info("consumer service stopping")

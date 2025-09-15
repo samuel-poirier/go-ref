@@ -9,12 +9,9 @@ import (
 
 func TestAppConfigValidate(t *testing.T) {
 	validConfig := app.AppConfig{
-		QueueName: "a",
-		ConnectionStrings: struct {
-			RabbitMq string "yaml:\"rabbitMq\""
-		}{
-			RabbitMq: "b",
-		},
+		Addr:                     ":8080",
+		QueueName:                "a",
+		RabbitMqConnectionString: "b",
 	}
 	t.Run("Test valid", func(t *testing.T) {
 		config := validConfig
@@ -31,7 +28,7 @@ func TestAppConfigValidate(t *testing.T) {
 	})
 	t.Run("Test missing connection string", func(t *testing.T) {
 		config := validConfig
-		config.ConnectionStrings.RabbitMq = ""
+		config.RabbitMqConnectionString = ""
 		assert.EqualError(t, config.Validate(), "rabbitmq connection string not configured")
 	})
 }

@@ -66,12 +66,7 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		return fmt.Errorf("failed when loading routes: %w", err)
 	}
 
-	defaultPort := 8080
-	addr := fmt.Sprintf(":%d", defaultPort)
-	if a.config.Addr != nil {
-		addr = *a.config.Addr
-	}
-	a.httpServer.Addr = addr
+	a.httpServer.Addr = a.config.Addr
 	a.httpServer.Handler = router
 
 	errCh := make(chan error, 1)
@@ -96,7 +91,7 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		close(errCh)
 	}()
 
-	a.logger.Info("server running", slog.String("port", addr))
+	a.logger.Info("server running", slog.String("port", a.config.Addr))
 
 	wg.Done()
 
@@ -107,8 +102,6 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	case err := <-errCh:
 		return err
 	}
-	// Wait until we receive SIGINT (ctrl+c on cli)
-	<-ctx.Done()
 	stopping = true
 
 	a.logger.Info("publisher service stopping")

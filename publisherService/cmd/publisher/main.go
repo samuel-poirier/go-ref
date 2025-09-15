@@ -9,15 +9,27 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/sam9291/go-pubsub-demo/publisher/docs"
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/app"
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/domain"
 	"github.com/sam9291/go-pubsub-demo/publisher/internal/infra"
+	"github.com/sam9291/go-pubsub-demo/shared/env"
 )
 
+//	@title			Go PubSub Demo Publisher API
+//	@version		1.0
+//	@description	Example publisher API
+
+//	@contact.url	https://github.com/sam9291/go-pubsub-demo
+
+//	@license.name	MIT
+//	@license.url	https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE
+
+// @host		localhost:8080
+// @BasePath	/
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-
-	configPath := os.Getenv("APP_CONFIG")
+	configPath := env.GetEnvOrDefault("APP_CONFIG", "../../configs/.env")
 	config, err := app.LoadAppConfig(configPath)
 
 	if err != nil {
@@ -28,7 +40,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	publisher := infra.NewRabbitMqPublisher(config.ConnectionStrings.RabbitMq, config.QueueName, logger)
+	publisher := infra.NewRabbitMqPublisher(config.RabbitMqConnectionString, config.QueueName, logger)
 
 	workers := []domain.BackgroundWorker{
 		infra.NewPeriodicPublisherBackgroundWorker(2*time.Second, &publisher, logger),

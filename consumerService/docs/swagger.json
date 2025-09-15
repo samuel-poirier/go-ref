@@ -1,0 +1,36 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Example consumer API",
+        "title": "Go PubSub Demo Consumer API",
+        "contact": {
+            "url": "https://github.com/sam9291/go-pubsub-demo"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8081",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/hc": {
+            "get": {
+                "description": "Returns ok if healthy",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Health check endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

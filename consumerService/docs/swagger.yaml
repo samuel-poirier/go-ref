@@ -1,0 +1,24 @@
+basePath: /
+host: localhost:8081
+info:
+  contact:
+    url: https://github.com/sam9291/go-pubsub-demo
+  description: Example consumer API
+  license:
+    name: MIT
+    url: https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE
+  title: Go PubSub Demo Consumer API
+  version: "1.0"
+paths:
+  /api/v1/hc:
+    get:
+      description: Returns ok if healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+      summary: Health check endpoint
+swagger: "2.0"

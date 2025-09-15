@@ -1,7 +1,7 @@
 # .air.toml
 
 [build]
-  cmd = "cd /app/consumerService/cmd/consumer && go build -o /tmp/main"
+  cmd = "cd /app/consumerService/cmd/consumer && go build -buildvcs=false -o /tmp/main"
   bin = "/tmp/main"
   full_bin = "/tmp/main"
   include_ext = ["go"]

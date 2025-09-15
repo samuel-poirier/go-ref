@@ -41,6 +41,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | Prod docker containers | |
 | Application configuration | x |
 | Http Endpoint | x |
+| Http Endpoint Versioning | x |
 | Middleware | x |
 | Dependency Injection | x |
 | Structured Logging | x |
@@ -56,7 +57,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | Database data seeding | |
 | Saga Pattern | |
 | Unit of Work Pattern | |
-| OpenAPI Documentation | |
+| OpenAPI Documentation | X |
 | Problem Details+json validation | |
 | Unit Test | x |
 | Integration Test | x |

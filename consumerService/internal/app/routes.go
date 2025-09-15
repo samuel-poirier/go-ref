@@ -3,8 +3,7 @@ package app
 import (
 	"net/http"
 
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/api/health"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/api/hello"
+	"github.com/sam9291/go-pubsub-demo/consumer/internal/api/health"
 	"github.com/sam9291/go-pubsub-demo/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
@@ -13,16 +12,14 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	// Create a new router
 	router := http.NewServeMux()
 
-	helloHandler := hello.NewHandler(a.publisher)
 	healthHandler := health.NewHandler()
 
 	v1 := http.NewServeMux()
-	v1.HandleFunc("GET /api/v1/hello", helloHandler.HelloWorld)
 	v1.HandleFunc("GET /api/v1/hc", healthHandler.HealthCheck)
 
 	swaggerEndpoints := http.NewServeMux()
 	swaggerEndpoints.HandleFunc("GET /{path}", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.URL("http://localhost:8081/swagger/doc.json"), //The url pointing to API definition
 	))
 
 	router.Handle("/api/v1/", v1)
