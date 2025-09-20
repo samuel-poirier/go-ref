@@ -9,9 +9,10 @@ import (
 
 func TestAppConfigValidate(t *testing.T) {
 	validConfig := app.AppConfig{
-		Addr:                     ":8080",
+		Hostname:                 "a",
+		Addr:                     "a",
 		QueueName:                "a",
-		RabbitMqConnectionString: "b",
+		RabbitMqConnectionString: "a",
 	}
 	t.Run("Test valid", func(t *testing.T) {
 		config := validConfig
@@ -30,5 +31,15 @@ func TestAppConfigValidate(t *testing.T) {
 		config := validConfig
 		config.RabbitMqConnectionString = ""
 		assert.EqualError(t, config.Validate(), "rabbitmq connection string not configured")
+	})
+	t.Run("Test missing hostname", func(t *testing.T) {
+		config := validConfig
+		config.Hostname = ""
+		assert.EqualError(t, config.Validate(), "app hostname not configured")
+	})
+	t.Run("Test missing addr", func(t *testing.T) {
+		config := validConfig
+		config.Addr = ""
+		assert.EqualError(t, config.Validate(), "app port not configured")
 	})
 }

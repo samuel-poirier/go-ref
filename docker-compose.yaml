@@ -39,6 +39,19 @@ services:
     volumes:
         - lab_rabbitmq_data:/var/lib/rabbitmq/
         - lab_rabbitmq_logs:/var/log/rabbitmq/
+  db:
+    image: postgres:14.1-alpine # Specifies the PostgreSQL image and version
+    restart: always # Ensures the container restarts if it crashes
+    environment:
+      POSTGRES_DB: demo_pub_sub # Sets the default database name
+      POSTGRES_USER: demo # Sets the default user
+      POSTGRES_PASSWORD: user # Sets the user's password
+    ports:
+      - "5432:5432" # Maps host port 5432 to container port 5432
+    volumes:
+      - db_data:/var/lib/postgresql/data # Persists database data
+
 volumes:
   lab_rabbitmq_data:
   lab_rabbitmq_logs:
+  db_data:

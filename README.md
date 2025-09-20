@@ -34,30 +34,30 @@ This repository is a simple showcase to practice and use as a reference. The goa
 
 ### Demo concepts
 
-| Name | Status |
-| - | - |
-| Code live reload | x |
-| Dev docker containers | x |
-| Prod docker containers | |
-| Application configuration | x |
-| Http Endpoint | x |
-| Http Endpoint Versioning | x |
-| Middleware | x |
-| Dependency Injection | x |
-| Structured Logging | x |
-| OpenTelemetry Instrumentation | |
-| Message Broker Publisher | x |
-| Message Broker Consumer | x |
-| Message Broker Outbox Pattern | |
-| Message Broker Inbox Pattern | |
-| Database query | |
-| Database updates | |
-| Database transactions | |
-| Database migrations | |
-| Database data seeding | |
-| Saga Pattern | |
-| Unit of Work Pattern | |
-| OpenAPI Documentation | X |
-| Problem Details+json validation | |
-| Unit Test | x |
-| Integration Test | x |
+| ID | Name | Status |
+| - | - | - |
+| 1 | Code live reload | x |
+| 2 | Dev docker containers | x |
+| 3 | Prod docker containers | |
+| 4 | Application configuration | x |
+| 5 | Http Endpoint | x |
+| 6 | Http Endpoint Versioning | x |
+| 7 | Middleware | x |
+| 8 | Dependency Injection | x |
+| 9 | Structured Logging | x |
+| 10 | OpenTelemetry Instrumentation | |
+| 11 | Message Broker Publisher | x |
+| 12 | Message Broker Consumer | x |
+| 13 | Message Broker Outbox Pattern | |
+| 14 | Message Broker Inbox Pattern | |
+| 15 | Database query | |
+| 16 | Database updates | |
+| 17 | Database transactions | |
+| 18 | Database migrations | |
+| 19 | Database data seeding | |
+| 20 | Saga Pattern | |
+| 21 | Unit of Work Pattern | |
+| 22 | OpenAPI Documentation | x |
+| 23 | Problem Details+json validation | |
+| 24 | Unit Test | x |
+| 25 | Integration Test | x |
