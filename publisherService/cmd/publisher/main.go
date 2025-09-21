@@ -9,21 +9,21 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/sam9291/go-pubsub-demo/publisher/docs"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/app"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/domain"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/infra"
-	"github.com/sam9291/go-pubsub-demo/shared/env"
+	_ "github.com/samuel-poirier/go-pubsub-demo/publisher/docs"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/app"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/domain"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/infra"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/env"
 )
 
 //	@title			Go PubSub Demo Publisher API
 //	@version		1.0
 //	@description	Example publisher API
 
-//	@contact.url	https://github.com/sam9291/go-pubsub-demo
+//	@contact.url	https://github.com/samuel-poirier/go-pubsub-demo
 
 //	@license.name	MIT
-//	@license.url	https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE
+//	@license.url	https://github.com/samuel-poirier/go-pubsub-demo/blob/main/LICENSE
 
 // @host		localhost:8080
 // @BasePath	/

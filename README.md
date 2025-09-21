@@ -22,10 +22,12 @@ This repository is a simple showcase to practice and use as a reference. The goa
         System(publisher, "Publisher", "Rest API and background publisher<br>:8080")
         System(rabbitmq, "RabbitMQ", "Message broker")
         System(consumer, "Consumer", "Background worker consuming and processing <br>messages from the message broker")
+        System(postgresql, "Postgresql", "Database")
       }
 
       Rel(publisher, rabbitmq, "Publishes to")
       Rel(consumer, rabbitmq, "Subscribes to")
+      Rel(consumer, postgresql, "Read / Write")
       UpdateLayoutConfig($c4ShapeInRow="1", $c4BoundaryInRow="1")
 
 
@@ -50,10 +52,10 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 12 | Message Broker Consumer | x |
 | 13 | Message Broker Outbox Pattern | |
 | 14 | Message Broker Inbox Pattern | |
-| 15 | Database query | |
-| 16 | Database updates | |
+| 15 | Database query | x |
+| 16 | Database updates | x |
 | 17 | Database transactions | |
-| 18 | Database migrations | |
+| 18 | Database migrations | x |
 | 19 | Database data seeding | |
 | 20 | Saga Pattern | |
 | 21 | Unit of Work Pattern | |

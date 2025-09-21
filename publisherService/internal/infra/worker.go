@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	events "github.com/sam9291/go-pubsub-demo/events"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/domain"
+	events "github.com/samuel-poirier/go-pubsub-demo/events"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/domain"
 )
 
 type PeriodicPublisherMessageBackgroundWorker struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/joho/godotenv"
-	"github.com/sam9291/go-pubsub-demo/shared/env"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/env"
 )
 
 type AppConfig struct {

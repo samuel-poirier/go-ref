@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/sam9291/go-pubsub-demo/events"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/domain"
-	"github.com/sam9291/go-pubsub-demo/shared/response"
+	"github.com/samuel-poirier/go-pubsub-demo/events"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/domain"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
 )
 
 type Handler struct {

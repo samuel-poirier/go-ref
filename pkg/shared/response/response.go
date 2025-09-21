@@ -16,3 +16,9 @@ func WriteJsonBadRequest[T any](w http.ResponseWriter, payload T) error {
 	w.WriteHeader(http.StatusBadRequest)
 	return json.NewEncoder(w).Encode(payload)
 }
+
+func WriteInternalServerError(w http.ResponseWriter, errorMessage string) (int, error) {
+	w.Header().Set("Content-Type", "plain/text")
+	w.WriteHeader(http.StatusInternalServerError)
+	return w.Write([]byte(errorMessage))
+}

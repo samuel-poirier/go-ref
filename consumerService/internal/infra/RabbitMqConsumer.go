@@ -6,8 +6,9 @@ import (
 	"log/slog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/sam9291/go-pubsub-demo/consumer/internal/app"
-	events "github.com/sam9291/go-pubsub-demo/events"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	events "github.com/samuel-poirier/go-pubsub-demo/events"
 )
 
 type RabbitMqConsumer struct {
@@ -16,7 +17,7 @@ type RabbitMqConsumer struct {
 	logger           *slog.Logger
 }
 
-func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context) error {
+func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context, repo *repository.Queries) error {
 
 	conn, err := amqp.Dial(consumer.connectionString)
 
@@ -69,6 +70,10 @@ func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context) error {
 			consumer.logger.Error("failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
 		} else {
 			consumer.logger.Info("Received a message", slog.String("id", message.Id), slog.String("data", message.Data))
+			err = repo.CreateProcessedItem(ctx, message.Data)
+			if err != nil {
+				consumer.logger.Error("failed to persist processed item", slog.Any("error", err))
+			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-module github.com/sam9291/go-pubsub-demo/publisher
+module github.com/samuel-poirier/go-pubsub-demo/publisher
 
 go 1.24.4
 

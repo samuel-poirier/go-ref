@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sam9291/go-pubsub-demo/consumer/internal/api/health"
-	"github.com/sam9291/go-pubsub-demo/shared/middleware"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/api/health"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/api/processed"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
@@ -14,9 +16,12 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	router := http.NewServeMux()
 
 	healthHandler := health.NewHandler()
+	processedHandler := processed.NewHandler(repository.New(a.db))
 
 	v1 := http.NewServeMux()
 	v1.HandleFunc("GET /api/v1/hc", healthHandler.HealthCheck)
+	v1.HandleFunc("GET /api/v1/items/processed", processedHandler.ProcessedItems)
+	v1.HandleFunc("GET /api/v1/items/processed/count", processedHandler.CountProcessedItems)
 
 	swaggerEndpoints := http.NewServeMux()
 

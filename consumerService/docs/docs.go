@@ -10,11 +10,11 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "url": "https://github.com/sam9291/go-pubsub-demo"
+            "url": "https://github.com/samuel-poirier/go-pubsub-demo"
         },
         "license": {
             "name": "MIT",
-            "url": "https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE"
+            "url": "https://github.com/samuel-poirier/go-pubsub-demo/blob/main/LICENSE"
         },
         "version": "{{.Version}}"
     },
@@ -35,6 +35,75 @@ const docTemplate = `{
                             "type": "boolean"
                         }
                     }
+                }
+            }
+        },
+        "/api/v1/items/processed": {
+            "get": {
+                "description": "Returns top 100 last processed items",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Endpoint to get processed items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "Number of items to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Number of items to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/items/processed/count": {
+            "get": {
+                "description": "Returns count of all processed items",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Endpoint to count processed items",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "processedAt": {
+                    "type": "string"
+                },
+                "processedData": {
+                    "type": "string"
                 }
             }
         }

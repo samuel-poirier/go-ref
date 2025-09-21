@@ -7,20 +7,20 @@ import (
 	"os"
 	"os/signal"
 
-	_ "github.com/sam9291/go-pubsub-demo/consumer/docs"
-	"github.com/sam9291/go-pubsub-demo/consumer/internal/app"
-	"github.com/sam9291/go-pubsub-demo/consumer/internal/infra"
-	"github.com/sam9291/go-pubsub-demo/shared/env"
+	_ "github.com/samuel-poirier/go-pubsub-demo/consumer/docs"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/infra"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/env"
 )
 
 //	@title			Go PubSub Demo Consumer API
 //	@version		1.0
 //	@description	Example consumer API
 
-//	@contact.url	https://github.com/sam9291/go-pubsub-demo
+//	@contact.url	https://github.com/samuel-poirier/go-pubsub-demo
 
 //	@license.name	MIT
-//	@license.url	https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE
+//	@license.url	https://github.com/samuel-poirier/go-pubsub-demo/blob/main/LICENSE
 
 // @host		localhost:8081
 // @BasePath	/

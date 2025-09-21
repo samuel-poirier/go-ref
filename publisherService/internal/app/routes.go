@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/api/health"
-	"github.com/sam9291/go-pubsub-demo/publisher/internal/api/hello"
-	"github.com/sam9291/go-pubsub-demo/shared/middleware"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/api/health"
+	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/api/hello"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 

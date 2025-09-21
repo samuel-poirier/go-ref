@@ -19,6 +19,7 @@ services:
     image: localhost/go-pubsub-demo-consumer
     depends_on:
       - rabbitmq
+      - db
     build:
       context: consumerService
       dockerfile: Dockerfile.development
@@ -29,6 +30,12 @@ services:
       - APP_ENV=dev
       - APP_CONFIG=/app/consumerService/configs/.env
       - RABBIT_MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=demo
+      - POSTGRES_PASSWORD=user
+      - POSTGRES_DB=demo_pub_sub
+      - POSTGRES_SSLMODE=disable
     volumes:
       - .:/app        # mount source code
   rabbitmq:

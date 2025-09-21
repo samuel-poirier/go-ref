@@ -10,11 +10,11 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "url": "https://github.com/sam9291/go-pubsub-demo"
+            "url": "https://github.com/samuel-poirier/go-pubsub-demo"
         },
         "license": {
             "name": "MIT",
-            "url": "https://github.com/sam9291/go-pubsub-demo/blob/main/LICENSE"
+            "url": "https://github.com/samuel-poirier/go-pubsub-demo/blob/main/LICENSE"
         },
         "version": "{{.Version}}"
     },
