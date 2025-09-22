@@ -1,5 +1,5 @@
 # Stage 1: Base image with Go and Air installed
-FROM golang:1.24-alpine AS dev
+FROM golang:1.25-alpine AS dev
 
 # Install required tools (git + build-base for cgo, air for hot reload)
 RUN go install github.com/air-verse/air@v1.62.0
@@ -7,10 +7,6 @@ RUN apk add --no-cache git
 
 # Set working directory
 WORKDIR /app/consumerService
-
-# Copy go.mod and go.sum first for dependency caching
-COPY go.mod go.sum ./
-RUN go mod download
 
 # Copy the rest of the service code
 COPY . .

@@ -27,6 +27,7 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	)
 	swaggerEndpoints.HandleFunc("GET /swagger/{path}", swaggerHandler)
 	swaggerEndpoints.HandleFunc("GET /swagger/", swaggerHandler)
+	swaggerEndpoints.HandleFunc("GET /swagger", swaggerHandler)
 
 	router.Handle("/api/v1/", v1)
 	router.Handle("/swagger/", swaggerEndpoints)

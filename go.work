@@ -1,8 +1,9 @@
-go 1.24.4
+go 1.25.1
 
 use (
 	./consumerService
-	./publisherService
 	./pkg/events
 	./pkg/shared
+	./publisherService
 )
+
