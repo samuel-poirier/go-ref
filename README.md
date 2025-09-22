@@ -63,3 +63,17 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 23 | Problem Details+json validation | |
 | 24 | Unit Test | x |
 | 25 | Integration Test | x |
+
+### Dev tool dependencies
+
+[sqlc](https://docs.sqlc.dev/en/latest/index.html)
+
+```shell
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+```
+
+[swag](https://github.com/swaggo/swag)
+
+```shell
+go install github.com/swaggo/swag/cmd/swag@latest
+```
