@@ -30,8 +30,20 @@ This repository is a simple showcase to practice and use as a reference. The goa
       Rel(consumer, postgresql, "Read / Write")
       UpdateLayoutConfig($c4ShapeInRow="1", $c4BoundaryInRow="1")
 
+```
 
+## Software Architecture Flow
 
+```mermaid
+  flowchart LR
+    A.1[http handler] --> B(application service)
+    A.2[consumer] --> B(application service)
+    B --> C{readonly action <br>or <br>mutate data?}
+    C --> D[query]
+    C --> E[command]
+    D -->|reads| F[repository]
+    E -->|writes| F[repository]
+    F --> G[database]
 ```
 
 ### Demo concepts
@@ -63,6 +75,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 23 | Problem Details+json validation | |
 | 24 | Unit Test | x |
 | 25 | Integration Test | x |
+| 26 | CQRS | x |
 
 ### Dev tool dependencies
 

@@ -4,17 +4,17 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
 )
 
 type Handler struct {
-	repo *repository.Queries
+	service service.Service
 }
 
-func NewHandler(repo *repository.Queries) Handler {
+func NewHandler(service *service.Service) Handler {
 	return Handler{
-		repo: repo,
+		service: *service,
 	}
 }
 
@@ -26,6 +26,7 @@ func NewHandler(repo *repository.Queries) Handler {
 // @Success		200	{array} repository.ProcessedItem
 // @Router			/api/v1/items/processed [get]
 func (handler *Handler) ProcessedItems(w http.ResponseWriter, r *http.Request) {
+
 	offsetParam := r.URL.Query().Get("offset")
 	limitParam := r.URL.Query().Get("limit")
 
@@ -50,10 +51,8 @@ func (handler *Handler) ProcessedItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, err := handler.repo.FindProcessedItemsWithPaging(r.Context(), repository.FindProcessedItemsWithPagingParams{
-		Offset: int32(offset),
-		Limit:  int32(limit),
-	})
+	items, err := handler.service.Queries.FindProcessedItemsWithPaging(r.Context(), int32(offset), int32(limit))
+
 	if err != nil {
 		response.WriteInternalServerError(w, err.Error())
 	} else {
@@ -67,7 +66,7 @@ func (handler *Handler) ProcessedItems(w http.ResponseWriter, r *http.Request) {
 // @Success		200	{number} count
 // @Router			/api/v1/items/processed/count [get]
 func (handler *Handler) CountProcessedItems(w http.ResponseWriter, r *http.Request) {
-	count, err := handler.repo.CountAllProcessedItems(r.Context())
+	count, err := handler.service.Queries.CountAllProcessedItems(r.Context())
 	if err != nil {
 		response.WriteInternalServerError(w, err.Error())
 	} else {

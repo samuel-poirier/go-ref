@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/api/health"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/api/processed"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/api/health"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/api/processed"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
 	"github.com/samuel-poirier/go-pubsub-demo/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -16,7 +17,9 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	router := http.NewServeMux()
 
 	healthHandler := health.NewHandler()
-	processedHandler := processed.NewHandler(repository.New(a.db))
+	repo := repository.New((a.db))
+	service := service.New(repo)
+	processedHandler := processed.NewHandler(service)
 
 	v1 := http.NewServeMux()
 	v1.HandleFunc("GET /api/v1/hc", healthHandler.HealthCheck)
