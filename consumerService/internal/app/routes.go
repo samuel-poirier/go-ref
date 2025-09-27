@@ -25,6 +25,7 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	v1.HandleFunc("GET /api/v1/hc", healthHandler.HealthCheck)
 	v1.HandleFunc("GET /api/v1/items/processed", processedHandler.ProcessedItems)
 	v1.HandleFunc("GET /api/v1/items/processed/count", processedHandler.CountProcessedItems)
+	v1.HandleFunc("GET /api/v1/items/processed/{id}", processedHandler.FindProcessedItemById)
 
 	swaggerEndpoints := http.NewServeMux()
 

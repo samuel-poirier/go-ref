@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/commands"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/queries"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
@@ -10,6 +11,7 @@ import (
 
 type Queries interface {
 	FindProcessedItemsWithPaging(ctx context.Context, offset, limit int32) ([]repository.ProcessedItem, error)
+	FindProcessedItemById(ctx context.Context, id uuid.UUID) (*repository.ProcessedItem, error)
 	CountAllProcessedItems(ctx context.Context) (int64, error)
 }
 

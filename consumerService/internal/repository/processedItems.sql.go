@@ -7,6 +7,8 @@ package repository
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const countAllProcessedItems = `-- name: CountAllProcessedItems :one
@@ -35,6 +37,17 @@ SELECT id, processed_at, processed_data from processed_items order by processed_
 
 func (q *Queries) FindLastProcessedItem(ctx context.Context) (ProcessedItem, error) {
 	row := q.db.QueryRow(ctx, findLastProcessedItem)
+	var i ProcessedItem
+	err := row.Scan(&i.ID, &i.ProcessedAt, &i.ProcessedData)
+	return i, err
+}
+
+const findProcessedItemById = `-- name: FindProcessedItemById :one
+SELECT id, processed_at, processed_data from processed_items WHERE id = $1
+`
+
+func (q *Queries) FindProcessedItemById(ctx context.Context, id uuid.UUID) (ProcessedItem, error) {
+	row := q.db.QueryRow(ctx, findProcessedItemById, id)
 	var i ProcessedItem
 	err := row.Scan(&i.ID, &i.ProcessedAt, &i.ProcessedData)
 	return i, err

@@ -90,6 +90,32 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/items/processed/{id}": {
+            "get": {
+                "description": "Returns the processed item found by id",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Endpoint get one processed item by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id of the item",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

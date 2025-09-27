@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
+	_ "github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
 	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
 )
 
@@ -72,4 +74,33 @@ func (handler *Handler) CountProcessedItems(w http.ResponseWriter, r *http.Reque
 	} else {
 		response.WriteJsonOk(w, count)
 	}
+}
+
+// @Summary		Endpoint get one processed item by id
+// @Description	Returns the processed item found by id
+// @Produce		json
+// @Success		200	{object} repository.ProcessedItem
+// @Error		404	not found
+// @Router			/api/v1/items/processed/{id} [get]
+// @Param id path string true "id of the item"
+func (handler *Handler) FindProcessedItemById(w http.ResponseWriter, r *http.Request) {
+
+	idString := r.PathValue("id")
+	id, err := uuid.Parse(idString)
+	if err != nil {
+		response.WriteJsonBadRequest(w, "invalid id format")
+		return
+	}
+
+	item, err := handler.service.Queries.FindProcessedItemById(r.Context(), id)
+	if err != nil {
+		response.WriteInternalServerError(w, err.Error())
+		return
+	}
+
+	if item == nil {
+		response.WriteNotFound(w)
+		return
+	}
+	response.WriteJsonOk(w, item)
 }

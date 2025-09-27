@@ -55,6 +55,23 @@ paths:
               $ref: '#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem'
             type: array
       summary: Endpoint to get processed items
+  /api/v1/items/processed/{id}:
+    get:
+      description: Returns the processed item found by id
+      parameters:
+      - description: id of the item
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem'
+      summary: Endpoint get one processed item by id
   /api/v1/items/processed/count:
     get:
       description: Returns count of all processed items

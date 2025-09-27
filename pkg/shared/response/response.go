@@ -22,3 +22,9 @@ func WriteInternalServerError(w http.ResponseWriter, errorMessage string) (int, 
 	w.WriteHeader(http.StatusInternalServerError)
 	return w.Write([]byte(errorMessage))
 }
+
+func WriteNotFound(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	return nil
+}
