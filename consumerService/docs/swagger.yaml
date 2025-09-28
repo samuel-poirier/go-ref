@@ -9,6 +9,62 @@ definitions:
       processedData:
         type: string
     type: object
+  response.ErrorDetail:
+    properties:
+      location:
+        description: |-
+          Location is a path-like string indicating where the error occurred.
+          It typically begins with `path`, `query`, `header`, or `body`. Example:
+          `body.items[3].tags` or `path.thing-id`.
+        type: string
+      message:
+        description: Message is a human-readable explanation of the error.
+        type: string
+      value:
+        description: |-
+          Value is the value at the given location, echoed back to the client
+          to help with debugging. This can be useful for e.g. validating that
+          the client didn't send extra whitespace or help when the client
+          did not log an outgoing request.
+    type: object
+  response.ErrorModel:
+    properties:
+      detail:
+        description: Detail is an explanation specific to this error occurrence.
+        example: Property foo is required but is missing.
+        type: string
+      errors:
+        description: |-
+          Errors provides an optional mechanism of passing additional error details
+          as a list.
+        items:
+          $ref: '#/definitions/response.ErrorDetail'
+        type: array
+      instance:
+        description: Instance is a URI to get more info about this error occurrence.
+        example: https://example.com/error-log/abc123
+        format: uri
+        type: string
+      status:
+        description: |-
+          Status provides the HTTP status code for client convenience. Response will
+          default this to the response status code if unset. This SHOULD match the
+          response status code (though proxies may modify the actual status code).
+        example: 400
+        type: integer
+      title:
+        description: |-
+          Title provides a short static summary of the problem. Response will default this
+          to the HTTP response status code text if not present.
+        example: Bad Request
+        type: string
+      type:
+        default: about:blank
+        description: Type is a URI to get more information about the error type.
+        example: https://example.com/errors/example
+        format: uri
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact:
@@ -54,6 +110,14 @@ paths:
             items:
               $ref: '#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
       summary: Endpoint to get processed items
   /api/v1/items/processed/{id}:
     get:
@@ -71,6 +135,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
       summary: Endpoint get one processed item by id
   /api/v1/items/processed/count:
     get:
@@ -82,5 +158,9 @@ paths:
           description: OK
           schema:
             type: number
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
       summary: Endpoint to count processed items
 swagger: "2.0"

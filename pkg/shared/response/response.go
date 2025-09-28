@@ -11,20 +11,26 @@ func WriteJsonOk[T any](w http.ResponseWriter, payload T) error {
 	return json.NewEncoder(w).Encode(payload)
 }
 
-func WriteJsonBadRequest[T any](w http.ResponseWriter, payload T) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
-	return json.NewEncoder(w).Encode(payload)
+func WriteError(w http.ResponseWriter, err *ErrorModel) error {
+	w.Header().Set("Content-Type", err.ContentType("application/json"))
+	w.WriteHeader(err.Status)
+	return json.NewEncoder(w).Encode(err)
 }
 
-func WriteInternalServerError(w http.ResponseWriter, errorMessage string) (int, error) {
-	w.Header().Set("Content-Type", "plain/text")
-	w.WriteHeader(http.StatusInternalServerError)
-	return w.Write([]byte(errorMessage))
+func WriteJsonBadRequest(w http.ResponseWriter, errorMessage string, errors ...error) error {
+	problemDetails := Error400BadRequest(errorMessage, errors...)
+	problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1"
+	return WriteError(w, problemDetails)
+}
+
+func WriteInternalServerError(w http.ResponseWriter, errorMessage string) error {
+	problemDetails := Error500InternalServerError(errorMessage)
+	problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.6.1"
+	return WriteError(w, problemDetails)
 }
 
 func WriteNotFound(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotFound)
-	return nil
+	problemDetails := Error404NotFound("object not found")
+	problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5"
+	return WriteError(w, problemDetails)
 }

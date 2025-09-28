@@ -64,6 +64,18 @@
                                 "$ref": "#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem"
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
                     }
                 }
             }
@@ -80,6 +92,12 @@
                         "description": "OK",
                         "schema": {
                             "type": "number"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
                         }
                     }
                 }
@@ -107,6 +125,24 @@
                         "schema": {
                             "$ref": "#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
                     }
                 }
             }
@@ -124,6 +160,62 @@
                 },
                 "processedData": {
                     "type": "string"
+                }
+            }
+        },
+        "response.ErrorDetail": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "description": "Location is a path-like string indicating where the error occurred.\nIt typically begins with `path`, `query`, `header`, or `body`. Example:\n`body.items[3].tags` or `path.thing-id`.",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "Message is a human-readable explanation of the error.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Value is the value at the given location, echoed back to the client\nto help with debugging. This can be useful for e.g. validating that\nthe client didn't send extra whitespace or help when the client\ndid not log an outgoing request."
+                }
+            }
+        },
+        "response.ErrorModel": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "description": "Detail is an explanation specific to this error occurrence.",
+                    "type": "string",
+                    "example": "Property foo is required but is missing."
+                },
+                "errors": {
+                    "description": "Errors provides an optional mechanism of passing additional error details\nas a list.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ErrorDetail"
+                    }
+                },
+                "instance": {
+                    "description": "Instance is a URI to get more info about this error occurrence.",
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://example.com/error-log/abc123"
+                },
+                "status": {
+                    "description": "Status provides the HTTP status code for client convenience. Response will\ndefault this to the response status code if unset. This SHOULD match the\nresponse status code (though proxies may modify the actual status code).",
+                    "type": "integer",
+                    "example": 400
+                },
+                "title": {
+                    "description": "Title provides a short static summary of the problem. Response will default this\nto the HTTP response status code text if not present.",
+                    "type": "string",
+                    "example": "Bad Request"
+                },
+                "type": {
+                    "description": "Type is a URI to get more information about the error type.",
+                    "type": "string",
+                    "format": "uri",
+                    "default": "about:blank",
+                    "example": "https://example.com/errors/example"
                 }
             }
         }

@@ -2,6 +2,8 @@ package queries
 
 import "context"
 
-func (q queries) CountAllProcessedItems(ctx context.Context) (int64, error) {
-	return q.repo.CountAllProcessedItems(ctx)
+type CountAllProcessedItemsQuery struct{}
+
+func (h handler) CountAllProcessedItems(ctx context.Context, q CountAllProcessedItemsQuery) (int64, error) {
+	return h.repo.CountAllProcessedItems(ctx)
 }
