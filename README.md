@@ -72,10 +72,10 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 20 | Saga Pattern | |
 | 21 | Unit of Work Pattern | |
 | 22 | OpenAPI Documentation | x |
-| 23 | Problem Details+json validation | x |
+| 23 | Problem Details+json validation ([RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457)) | x |
 | 24 | Unit Test | x |
 | 25 | Integration Test | x |
-| 26 | CQRS | x |
+| 26 | CQRS (simple version) | x |
 
 ### Dev tool dependencies
 

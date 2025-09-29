@@ -6,12 +6,9 @@ import (
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
 )
 
-type Commands interface {
-}
-
 type Service struct {
 	Queries  queries.Queries
-	Commands Commands
+	Commands commands.Commands
 }
 
 func New(repo *repository.Queries) *Service {

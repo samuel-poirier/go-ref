@@ -1,12 +1,20 @@
 package commands
 
-import "github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+import (
+	"context"
+
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+)
+
+type Commands interface {
+	CreateProcessedItem(ctx context.Context, cmd CreateProcessedItemCommand) error
+}
 
 type commands struct {
 	repo repository.Queries
 }
 
-func New(repo *repository.Queries) commands {
+func New(repo *repository.Queries) Commands {
 	return commands{
 		repo: *repo,
 	}

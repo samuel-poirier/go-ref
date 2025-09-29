@@ -3,6 +3,8 @@ package response
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func WriteJsonOk[T any](w http.ResponseWriter, payload T) error {
@@ -21,6 +23,14 @@ func WriteJsonBadRequest(w http.ResponseWriter, errorMessage string, errors ...e
 	problemDetails := Error400BadRequest(errorMessage, errors...)
 	problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1"
 	return WriteError(w, problemDetails)
+}
+
+func WriteJsonBadRequestFromValidationErrors(w http.ResponseWriter, validation validator.ValidationErrors) error {
+	errors := make([]error, len(validation))
+	for i := range validation {
+		errors[i] = validation[i]
+	}
+	return WriteJsonBadRequest(w, "validation errors", errors...)
 }
 
 func WriteInternalServerError(w http.ResponseWriter, errorMessage string) error {

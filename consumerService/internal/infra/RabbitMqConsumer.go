@@ -7,7 +7,8 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/commands"
 	events "github.com/samuel-poirier/go-pubsub-demo/events"
 )
 
@@ -17,7 +18,7 @@ type RabbitMqConsumer struct {
 	logger           *slog.Logger
 }
 
-func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context, repo *repository.Queries) error {
+func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context, service *service.Service) error {
 
 	conn, err := amqp.Dial(consumer.connectionString)
 
@@ -70,7 +71,10 @@ func (consumer *RabbitMqConsumer) StartConsuming(ctx context.Context, repo *repo
 			consumer.logger.Error("failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
 		} else {
 			consumer.logger.Info("Received a message", slog.String("id", message.Id), slog.String("data", message.Data))
-			err = repo.CreateProcessedItem(ctx, message.Data)
+			cmd := commands.CreateProcessedItemCommand{
+				Data: message.Data,
+			}
+			err = service.Commands.CreateProcessedItem(ctx, cmd)
 			if err != nil {
 				consumer.logger.Error("failed to persist processed item", slog.Any("error", err))
 			}
