@@ -66,7 +66,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 14 | Message Broker Inbox Pattern | |
 | 15 | Database query | x |
 | 16 | Database updates | x |
-| 17 | Database transactions | |
+| 17 | Database transactions | x |
 | 18 | Database migrations | x |
 | 19 | Database data seeding | |
 | 20 | Saga Pattern | |

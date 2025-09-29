@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/infra/database"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
 )
@@ -53,7 +54,8 @@ func (a *App) Start(ctx context.Context) error {
 	go func() {
 		for !stopping { // loop until cancel signal
 			repo := repository.New(a.db)
-			err := consumer.StartConsuming(ctx, repo)
+			service := service.New(repo, a.db)
+			err := consumer.StartConsuming(ctx, service)
 
 			if err != nil {
 				a.logger.Error("failed to start consuming, retrying in 1 sec.", slog.Any("error", err))

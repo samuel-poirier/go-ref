@@ -17,8 +17,8 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	router := http.NewServeMux()
 
 	healthHandler := health.NewHandler()
-	repo := repository.New((a.db))
-	service := service.New(repo)
+	repo := repository.New(a.db)
+	service := service.New(repo, a.db)
 	processedHandler := processed.NewHandler(service)
 
 	v1 := http.NewServeMux()

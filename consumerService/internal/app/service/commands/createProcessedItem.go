@@ -18,5 +18,13 @@ func (c commands) CreateProcessedItem(ctx context.Context, cmd CreateProcessedIt
 		return err
 	}
 
-	return c.repo.CreateProcessedItem(ctx, cmd.Data)
+	tx, err := c.db.Begin(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	defer tx.Commit(ctx)
+
+	return c.repo.WithTx(tx).CreateProcessedItem(ctx, cmd.Data)
 }
