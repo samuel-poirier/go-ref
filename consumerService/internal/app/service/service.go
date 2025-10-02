@@ -8,8 +8,8 @@ import (
 )
 
 type Service struct {
-	Queries  queries.Queries
-	Commands commands.Commands
+	queries.Queries
+	commands.Commands
 }
 
 func New(repo *repository.Queries, db *pgxpool.Pool) *Service {
