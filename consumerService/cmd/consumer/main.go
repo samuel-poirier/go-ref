@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/samuel-poirier/go-pubsub-demo/consumer/docs"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/infra"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/infra/rabbitmq/consumer"
 	"github.com/samuel-poirier/go-pubsub-demo/shared/env"
 )
 
@@ -38,7 +38,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	consumer := infra.NewRabbitMqConsumer(*config, logger)
+	consumer := consumer.New(*config, logger)
 
 	app := app.New(*config, logger, &consumer, &http.Server{})
 

@@ -7,18 +7,15 @@ import (
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/api/health"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/api/processed"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
 	"github.com/samuel-poirier/go-pubsub-demo/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func (a *App) loadRoutes() (http.Handler, error) {
+func (a *App) loadRoutes(service *service.Service) (http.Handler, error) {
 	// Create a new router
 	router := http.NewServeMux()
 
 	healthHandler := health.NewHandler()
-	repo := repository.New(a.db)
-	service := service.New(repo, a.db)
 	processedHandler := processed.NewHandler(service)
 
 	v1 := http.NewServeMux()

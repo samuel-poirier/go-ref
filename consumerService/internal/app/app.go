@@ -9,20 +9,22 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/consumers/processed"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/infra/database"
 	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	"github.com/samuel-poirier/go-pubsub-demo/shared/consumer"
 )
 
 type App struct {
 	config     AppConfig
 	logger     *slog.Logger
-	consumer   *Consumer
+	consumer   *consumer.Consumer
 	httpServer *http.Server
 	db         *pgxpool.Pool
 }
 
-func New(config AppConfig, logger *slog.Logger, consumer *Consumer, httpServer *http.Server) *App {
+func New(config AppConfig, logger *slog.Logger, consumer *consumer.Consumer, httpServer *http.Server) *App {
 	return &App{
 		config:     config,
 		logger:     logger,
@@ -41,7 +43,7 @@ func (a *App) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to start app with nil http server")
 	}
 
-	consumer := *a.consumer
+	msgConsumer := *a.consumer
 	a.logger.Info("consumer service starting")
 
 	db, err := database.Connect(ctx, a.logger)
@@ -50,23 +52,22 @@ func (a *App) Start(ctx context.Context) error {
 	}
 
 	a.db = db
+
+	repo := repository.New(a.db)
+	service := service.New(repo, a.db)
+	consumerHandlers := make([]consumer.ConsumerHandler, 0)
+	consumerHandlers = append(consumerHandlers, processed.New(service, *a.logger, ctx))
+
+	errCh := make(chan error, 1)
 	stopping := false
-	go func() {
-		for !stopping { // loop until cancel signal
-			repo := repository.New(a.db)
-			service := service.New(repo, a.db)
-			err := consumer.StartConsuming(ctx, service)
 
-			if err != nil {
-				a.logger.Error("failed to start consuming, retrying in 1 sec.", slog.Any("error", err))
-			} else {
-				a.logger.Info("consumer disconnected. trying connection")
-			}
-			time.Sleep(1 * time.Second)
-		}
-	}()
+	for _, handler := range consumerHandlers {
+		go func() {
+			registerConsumer(ctx, stopping, handler, msgConsumer, a)
+		}()
+	}
 
-	router, err := a.loadRoutes()
+	router, err := a.loadRoutes(service)
 
 	if err != nil {
 		return fmt.Errorf("failed when loading routes: %w", err)
@@ -74,8 +75,6 @@ func (a *App) Start(ctx context.Context) error {
 
 	a.httpServer.Addr = a.config.Addr
 	a.httpServer.Handler = router
-
-	errCh := make(chan error, 1)
 
 	go func() {
 		err := a.httpServer.ListenAndServe()
@@ -100,4 +99,39 @@ func (a *App) Start(ctx context.Context) error {
 	a.logger.Info("consumer service stopping")
 
 	return nil
+}
+
+func registerConsumer(ctx context.Context, stopping bool, handler consumer.ConsumerHandler, msgConsumer consumer.Consumer, a *App) {
+	msgChan := make(chan consumer.Message)
+	defer close(msgChan)
+
+	var subscribeMsgChan chan<- consumer.Message = msgChan
+
+	go func(h consumer.ConsumerHandler, c <-chan consumer.Message) {
+		for message := range c {
+			if stopping {
+				message.Nack(true)
+				return
+			}
+			h.Handle(message)
+		}
+	}(handler, msgChan)
+
+	a.logger.Info("registering consumer", slog.String("queue", a.config.QueueName), slog.String("handler", fmt.Sprintf("%T", handler)))
+
+	for {
+		err := msgConsumer.Subscribe(a.config.QueueName, &subscribeMsgChan, ctx)
+
+		if err != nil {
+			a.logger.Warn("failed to consumer, retrying...", slog.String("queue", a.config.QueueName), slog.String("handler", fmt.Sprintf("%T", handler)))
+			time.Sleep(500 * time.Millisecond)
+		}
+
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+	}
 }
