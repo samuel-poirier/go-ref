@@ -37,7 +37,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 ```mermaid
   flowchart LR
     A.1[http handler] --> B(application service)
-    A.2[consumer] --> B(application service)
+    A.2[consumer handler] --> B(application service)
     B --> C{readonly action <br>or <br>mutate data?}
     C --> D[query]
     C --> E[command]
