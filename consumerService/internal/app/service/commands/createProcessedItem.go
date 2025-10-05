@@ -18,19 +18,5 @@ func (c commands) CreateProcessedItem(ctx context.Context, cmd CreateProcessedIt
 		return err
 	}
 
-	tx, err := c.db.Begin(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if retErr != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
-
-	return c.repo.WithTx(tx).CreateProcessedItem(ctx, cmd.Data)
+	return c.repo.CreateProcessedItem(ctx, cmd.Data)
 }

@@ -43,7 +43,10 @@ func (c handler) Handle(msg consumer.Message) {
 	cmd := commands.CreateProcessedItemCommand{
 		Data: message.Data,
 	}
-	err = c.service.Commands.CreateProcessedItem(c.ctx, cmd)
+
+	err = c.service.RunWithUnitOfWork(c.ctx, func(s service.Service) error {
+		return s.Commands.CreateProcessedItem(c.ctx, cmd)
+	})
 
 	if err != nil {
 		c.logger.Error("failed to persist processed item", slog.Any("error", err))

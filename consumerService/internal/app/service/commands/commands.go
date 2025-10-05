@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
 )
 
@@ -13,12 +12,10 @@ type Commands interface {
 
 type commands struct {
 	repo repository.Queries
-	db   *pgxpool.Pool
 }
 
-func New(repo *repository.Queries, db *pgxpool.Pool) Commands {
+func New(repo *repository.Queries) Commands {
 	return commands{
 		repo: *repo,
-		db:   db,
 	}
 }

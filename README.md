@@ -39,12 +39,17 @@ This repository is a simple showcase to practice and use as a reference. The goa
     A.1[http handler] --> B(application service)
     A.2[consumer handler] --> B(application service)
     B --> C{readonly action <br>or <br>mutate data?}
-    C --> D[query]
-    C --> E[command]
-    D -->|reads| F[repository]
-    E -->|writes| F[repository]
+    subgraph uow[Unit Of Work Transaction *]
+        C --> D[query]
+        C --> E[command]
+        D -->|reads| F[repository]
+        E -->|writes| F[repository]
+    end
     F --> G[database]
+
 ```
+
+_\*: Unit of work can be omitted if we only execute queries_
 
 ### Demo concepts
 
@@ -70,7 +75,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 18 | Database migrations | x |
 | 19 | Database data seeding | |
 | 20 | Saga Pattern | |
-| 21 | Unit of Work Pattern | |
+| 21 | Unit of Work Pattern | x |
 | 22 | OpenAPI Documentation | x |
 | 23 | Problem Details+json validation ([RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457)) | x |
 | 24 | Unit Test | x |
