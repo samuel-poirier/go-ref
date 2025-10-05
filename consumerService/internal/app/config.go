@@ -2,9 +2,10 @@ package app
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/env"
+	"github.com/samuel-poirier/go-ref/shared/env"
 )
 
 type AppConfig struct {
@@ -15,10 +16,14 @@ type AppConfig struct {
 }
 
 func LoadAppConfig(path string) (*AppConfig, error) {
-	err := godotenv.Load(path)
 
-	if err != nil {
-		return nil, err
+	_, err := os.Stat(path)
+
+	if err == nil {
+		err := godotenv.Load(path)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	config := AppConfig{

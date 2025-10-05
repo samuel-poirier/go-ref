@@ -3,7 +3,7 @@ package health
 import (
 	"net/http"
 
-	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
+	"github.com/samuel-poirier/go-ref/shared/response"
 )
 
 type Handler struct {

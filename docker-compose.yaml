@@ -1,6 +1,6 @@
 services:
   publisher:
-    image: localhost/go-pubsub-demo-publisher
+    image: localhost/go-ref-publisher
     depends_on:
       - rabbitmq
     build:
@@ -16,7 +16,7 @@ services:
     volumes:
       - .:/app        # mount source code
   consumer:
-    image: localhost/go-pubsub-demo-consumer
+    image: localhost/go-ref-consumer
     depends_on:
       - rabbitmq
       - db

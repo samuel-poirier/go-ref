@@ -1,7 +1,7 @@
 package processed
 
 import (
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
 )
 
 type Handler struct {

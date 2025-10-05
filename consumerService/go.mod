@@ -1,12 +1,12 @@
-module github.com/samuel-poirier/go-pubsub-demo/consumer
+module github.com/samuel-poirier/go-ref/consumer
 
 go 1.25.1
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/samuel-poirier/go-pubsub-demo/events v0.0.0-00010101000000-000000000000
-	github.com/samuel-poirier/go-pubsub-demo/shared v0.0.0-00010101000000-000000000000
+	github.com/samuel-poirier/go-ref/events v0.0.0-00010101000000-000000000000
+	github.com/samuel-poirier/go-ref/shared v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6
@@ -52,6 +52,6 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0
 )
 
-replace github.com/samuel-poirier/go-pubsub-demo/shared => ../pkg/shared
+replace github.com/samuel-poirier/go-ref/shared => ../pkg/shared
 
-replace github.com/samuel-poirier/go-pubsub-demo/events => ../pkg/events
+replace github.com/samuel-poirier/go-ref/events => ../pkg/events

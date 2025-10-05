@@ -2,9 +2,9 @@ package service
 
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/commands"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/queries"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/commands"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/queries"
+	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
 )
 
 type Service struct {

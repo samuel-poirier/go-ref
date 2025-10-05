@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/queries"
-	_ "github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/queries"
+	_ "github.com/samuel-poirier/go-ref/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/shared/response"
 )
 
 // @Summary		Endpoint get one processed item by id

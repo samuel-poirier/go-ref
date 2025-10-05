@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/commands"
-	"github.com/samuel-poirier/go-pubsub-demo/events"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/consumer"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/commands"
+	"github.com/samuel-poirier/go-ref/events"
+	"github.com/samuel-poirier/go-ref/shared/consumer"
 )
 
 type handler struct {

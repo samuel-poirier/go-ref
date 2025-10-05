@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/queries"
-	_ "github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/queries"
+	_ "github.com/samuel-poirier/go-ref/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/shared/response"
 )
 
 // @Summary		Endpoint to get processed items

@@ -52,7 +52,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | - | - | - |
 | 1 | Code live reload | x |
 | 2 | Dev docker containers | x |
-| 3 | Prod docker containers | |
+| 3 | Prod docker containers | x |
 | 4 | Application configuration | x |
 | 5 | Http Endpoint | x |
 | 6 | Http Endpoint Versioning | x |
@@ -76,6 +76,7 @@ This repository is a simple showcase to practice and use as a reference. The goa
 | 24 | Unit Test | x |
 | 25 | Integration Test | x |
 | 26 | CQRS (simple version) | x |
+| 27 | CloudEvents |  |
 
 ### Dev tool dependencies
 

@@ -3,7 +3,7 @@ package app_test
 import (
 	"testing"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app"
 	"github.com/stretchr/testify/assert"
 )
 

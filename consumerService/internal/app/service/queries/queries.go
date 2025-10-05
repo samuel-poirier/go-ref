@@ -3,7 +3,7 @@ package queries
 import (
 	"context"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
 )
 
 type Queries interface {

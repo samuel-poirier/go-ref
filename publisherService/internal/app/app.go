@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/samuel-poirier/go-pubsub-demo/publisher/internal/domain"
+	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
 )
 
 type App struct {

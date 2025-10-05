@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/consumers/processed"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/infra/database"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/repository"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/consumer"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/processed"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
+	"github.com/samuel-poirier/go-ref/consumer/internal/infra/database"
+	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/shared/consumer"
 )
 
 type App struct {

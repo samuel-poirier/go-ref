@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 
-	"github.com/samuel-poirier/go-pubsub-demo/events"
+	"github.com/samuel-poirier/go-ref/events"
 )
 
 type Publisher interface {

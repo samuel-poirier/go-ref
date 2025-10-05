@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem:
+  github_com_samuel-poirier_go-ref_consumer_internal_repository.ProcessedItem:
     properties:
       id:
         type: string
@@ -68,11 +68,11 @@ definitions:
 host: localhost:8081
 info:
   contact:
-    url: https://github.com/samuel-poirier/go-pubsub-demo
+    url: https://github.com/samuel-poirier/go-ref
   description: Example consumer API
   license:
     name: MIT
-    url: https://github.com/samuel-poirier/go-pubsub-demo/blob/main/LICENSE
+    url: https://github.com/samuel-poirier/go-ref/blob/main/LICENSE
   title: Go PubSub Demo Consumer API
   version: "1.0"
 paths:
@@ -108,7 +108,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem'
+              $ref: '#/definitions/github_com_samuel-poirier_go-ref_consumer_internal_repository.ProcessedItem'
             type: array
         "400":
           description: Bad Request
@@ -134,7 +134,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem'
+            $ref: '#/definitions/github_com_samuel-poirier_go-ref_consumer_internal_repository.ProcessedItem'
         "400":
           description: Bad Request
           schema:

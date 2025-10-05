@@ -1,4 +1,4 @@
-module github.com/samuel-poirier/go-pubsub-demo/publisher
+module github.com/samuel-poirier/go-ref/publisher
 
 go 1.25.1
 
@@ -91,17 +91,24 @@ require (
 )
 
 require (
-	github.com/samuel-poirier/go-pubsub-demo/events v0.0.0-00010101000000-000000000000
-	github.com/samuel-poirier/go-pubsub-demo/shared v0.0.0-00010101000000-000000000000
+	github.com/samuel-poirier/go-ref/events v0.0.0-00010101000000-000000000000
+	github.com/samuel-poirier/go-ref/shared v0.0.0-00010101000000-000000000000
 )
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
+	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	google.golang.org/grpc v1.75.0 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 )
 
-replace github.com/samuel-poirier/go-pubsub-demo/shared => ../pkg/shared
+replace github.com/samuel-poirier/go-ref/shared => ../pkg/shared
 
-replace github.com/samuel-poirier/go-pubsub-demo/events => ../pkg/events
+replace github.com/samuel-poirier/go-ref/events => ../pkg/events

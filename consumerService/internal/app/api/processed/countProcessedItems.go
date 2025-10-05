@@ -3,8 +3,8 @@ package processed
 import (
 	"net/http"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service/queries"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/response"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/queries"
+	"github.com/samuel-poirier/go-ref/shared/response"
 )
 
 // @Summary		Endpoint to count processed items

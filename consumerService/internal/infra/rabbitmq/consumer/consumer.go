@@ -6,8 +6,8 @@ import (
 	"log/slog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/consumer"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app"
+	"github.com/samuel-poirier/go-ref/shared/consumer"
 )
 
 type RabbitMqConsumer struct {

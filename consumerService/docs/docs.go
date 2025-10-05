@@ -10,11 +10,11 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "url": "https://github.com/samuel-poirier/go-pubsub-demo"
+            "url": "https://github.com/samuel-poirier/go-ref"
         },
         "license": {
             "name": "MIT",
-            "url": "https://github.com/samuel-poirier/go-pubsub-demo/blob/main/LICENSE"
+            "url": "https://github.com/samuel-poirier/go-ref/blob/main/LICENSE"
         },
         "version": "{{.Version}}"
     },
@@ -67,7 +67,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem"
+                                "$ref": "#/definitions/github_com_samuel-poirier_go-ref_consumer_internal_repository.ProcessedItem"
                             }
                         }
                     },
@@ -129,7 +129,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem"
+                            "$ref": "#/definitions/github_com_samuel-poirier_go-ref_consumer_internal_repository.ProcessedItem"
                         }
                     },
                     "400": {
@@ -155,7 +155,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_samuel-poirier_go-pubsub-demo_consumer_internal_repository.ProcessedItem": {
+        "github_com_samuel-poirier_go-ref_consumer_internal_repository.ProcessedItem": {
             "type": "object",
             "properties": {
                 "id": {

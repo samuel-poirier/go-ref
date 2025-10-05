@@ -13,7 +13,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/config"
+	"github.com/samuel-poirier/go-ref/consumer/internal/config"
 )
 
 //go:embed migrations/*.sql

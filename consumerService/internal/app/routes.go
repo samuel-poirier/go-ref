@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/api/health"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/api/processed"
-	"github.com/samuel-poirier/go-pubsub-demo/consumer/internal/app/service"
-	"github.com/samuel-poirier/go-pubsub-demo/shared/middleware"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/api/health"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/api/processed"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
+	"github.com/samuel-poirier/go-ref/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
