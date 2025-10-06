@@ -8,21 +8,27 @@ import (
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/commands"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/queries"
 	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/shared/outbox"
 )
 
 type Service struct {
 	queries.Queries
 	commands.Commands
-	repo *repository.Queries
-	db   *pgxpool.Pool
+	EventOutbox         outbox.Writer[repository.CreateOutboxMessageParams]
+	repo                *repository.Queries
+	db                  *pgxpool.Pool
+	readerSignalChannel chan<- struct{}
 }
 
-func New(repo *repository.Queries, db *pgxpool.Pool) *Service {
+func New(repo *repository.Queries, db *pgxpool.Pool, readerSignalChannel chan<- struct{}) *Service {
+	eventOutbox := outbox.NewWriter(readerSignalChannel, repo)
 	return &Service{
-		Queries:  queries.New(repo),
-		Commands: commands.New(repo),
-		repo:     repo,
-		db:       db,
+		Queries:             queries.New(repo),
+		Commands:            commands.New(repo, eventOutbox),
+		EventOutbox:         eventOutbox,
+		repo:                repo,
+		db:                  db,
+		readerSignalChannel: readerSignalChannel,
 	}
 }
 
@@ -36,12 +42,9 @@ func (s Service) RunWithUnitOfWork(ctx context.Context, uow func(Service) error)
 
 	txRepo := s.repo.WithTx(tx)
 
-	service := Service{
-		Queries:  queries.New(txRepo),
-		Commands: commands.New(txRepo),
-	}
+	service := New(txRepo, s.db, s.readerSignalChannel)
 
-	err = uow(service)
+	err = uow(*service)
 
 	if err != nil {
 		err2 := tx.Rollback(ctx)
@@ -51,6 +54,14 @@ func (s Service) RunWithUnitOfWork(ctx context.Context, uow func(Service) error)
 		return err
 	}
 
-	return tx.Commit(ctx)
+	err = tx.Commit(ctx)
+
+	if err == nil {
+		go func() {
+			s.readerSignalChannel <- struct{}{}
+		}()
+	}
+
+	return err
 
 }

@@ -36,16 +36,21 @@ This repository is a simple showcase to practice and use as a reference. The goa
 
 ```mermaid
   flowchart LR
-    A.1[http handler] --> B(application service)
-    A.2[consumer handler] --> B(application service)
-    B --> C{readonly action <br>or <br>mutate data?}
+    httpHandler[http handler] --> applicationService(application service)
+    consumerHandler[consumer handler] --> applicationService(application service)
+    applicationService --> rwDecision{readonly action <br>or <br>mutate data?}
     subgraph uow[Unit Of Work Transaction *]
-        C --> D[query]
-        C --> E[command]
-        D -->|reads| F[repository]
-        E -->|writes| F[repository]
+        rwDecision --> query[query]
+        rwDecision --> command[command]
+        query -->|reads| repo[repository]
+        command -->|writes| repo[repository]
+        command -->|writes| outboxWriter[outbox writer]
     end
-    F --> G[database]
+    repo --> db[database]
+    outboxWriter -->|inserts| db
+    outboxWriter --> outboxReader[outbox reader]
+    outboxReader -->|publishes| messageBroker[message broker]
+    outboxReader -->|reads/updates/deletes| db
 
 ```
 
@@ -67,21 +72,20 @@ _\*: Unit of work can be omitted if we only execute queries_
 | 10 | OpenTelemetry Instrumentation | |
 | 11 | Message Broker Publisher | x |
 | 12 | Message Broker Consumer | x |
-| 13 | Message Broker Outbox Pattern | |
-| 14 | Message Broker Inbox Pattern | |
-| 15 | Database query | x |
-| 16 | Database updates | x |
-| 17 | Database transactions | x |
-| 18 | Database migrations | x |
-| 19 | Database data seeding | |
-| 20 | Saga Pattern | |
-| 21 | Unit of Work Pattern | x |
-| 22 | OpenAPI Documentation | x |
-| 23 | Problem Details+json validation ([RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457)) | x |
-| 24 | Unit Test | x |
-| 25 | Integration Test | x |
-| 26 | CQRS (simple version) | x |
-| 27 | CloudEvents |  |
+| 13 | Message Broker Outbox Pattern | x |
+| 14 | Database query | x |
+| 15 | Database updates | x |
+| 16 | Database transactions | x |
+| 17 | Database migrations | x |
+| 18 | Database data seeding | |
+| 19 | Saga Pattern | |
+| 20 | Unit of Work Pattern | x |
+| 21 | OpenAPI Documentation | x |
+| 22 | Problem Details+json validation ([RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457)) | x |
+| 23 | Unit Test | x |
+| 24 | Integration Test | x |
+| 25 | CQRS (simple version) | x |
+| 26 | CloudEvents |  |
 
 ### Dev tool dependencies
 

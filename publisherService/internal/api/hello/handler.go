@@ -5,15 +5,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/samuel-poirier/go-ref/events"
-	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
+	"github.com/samuel-poirier/go-ref/shared/publisher"
 	"github.com/samuel-poirier/go-ref/shared/response"
 )
 
 type Handler struct {
-	publisher *domain.Publisher
+	publisher *publisher.Publisher
 }
 
-func NewHandler(publisher *domain.Publisher) Handler {
+func NewHandler(publisher *publisher.Publisher) Handler {
 	return Handler{
 		publisher: publisher,
 	}
@@ -26,13 +26,19 @@ func NewHandler(publisher *domain.Publisher) Handler {
 // @Router			/api/v1/hello [get]
 func (handler *Handler) HelloWorld(w http.ResponseWriter, r *http.Request) {
 
-	publisher := *handler.publisher
-	message := events.Message{
+	pub := *handler.publisher
+	message := events.DataGeneratedEvent{
 		Id:   uuid.NewString(),
 		Data: "PUBLISHED FROM HELLO WORLD ENDPOINT",
 	}
-	if publisher != nil {
-		publisher.Publish(message)
+	if pub != nil {
+		m, err := publisher.NewMessageEnvelope(message)
+		if err != nil {
+			response.WriteInternalServerError(w, err.Error())
+			return
+		} else {
+			pub.Publish(m)
+		}
 	}
 
 	response.WriteJsonOk(w, message)

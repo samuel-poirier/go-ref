@@ -4,6 +4,9 @@ import (
 	"context"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/events"
 )
 
 type CreateProcessedItemCommand struct {
@@ -18,5 +21,22 @@ func (c commands) CreateProcessedItem(ctx context.Context, cmd CreateProcessedIt
 		return err
 	}
 
-	return c.repo.CreateProcessedItem(ctx, cmd.Data)
+	err = c.repo.CreateProcessedItem(ctx, cmd.Data)
+
+	if err != nil {
+		return err
+	}
+
+	nextEvent := events.DataProcessedEvent{
+		Id:   uuid.New().String(),
+		Data: cmd.Data,
+	}
+
+	message, err := repository.NewCreateOutboxMessageParams(nextEvent)
+
+	if err != nil {
+		return err
+	}
+
+	return c.eventOutbox.Write(ctx, message)
 }

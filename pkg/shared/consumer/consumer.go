@@ -7,6 +7,7 @@ type Consumer interface {
 }
 
 type ConsumerHandler interface {
+	GetQueueName() string
 	Handle(message Message)
 }
 

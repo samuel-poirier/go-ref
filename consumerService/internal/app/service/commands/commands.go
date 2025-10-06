@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
+	"github.com/samuel-poirier/go-ref/shared/outbox"
 )
 
 type Commands interface {
@@ -11,11 +12,13 @@ type Commands interface {
 }
 
 type commands struct {
-	repo repository.Queries
+	repo        repository.Queries
+	eventOutbox outbox.Writer[repository.CreateOutboxMessageParams]
 }
 
-func New(repo *repository.Queries) Commands {
+func New(repo *repository.Queries, eventOutbox outbox.Writer[repository.CreateOutboxMessageParams]) Commands {
 	return commands{
-		repo: *repo,
+		repo:        *repo,
+		eventOutbox: eventOutbox,
 	}
 }

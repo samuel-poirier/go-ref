@@ -1,13 +1,11 @@
-package processed
+package postprocessed
 
 import (
 	"context"
 	"encoding/json"
 	"log/slog"
-	"time"
 
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
-	"github.com/samuel-poirier/go-ref/consumer/internal/app/service/commands"
 	"github.com/samuel-poirier/go-ref/events"
 	"github.com/samuel-poirier/go-ref/shared/consumer"
 )
@@ -27,11 +25,12 @@ func New(service *service.Service, logger slog.Logger, ctx context.Context) *han
 }
 
 func (c handler) GetQueueName() string {
-	return "DataGeneratedEvent"
+	return "DataProcessedEvent"
 }
+
 func (c handler) Handle(msg consumer.Message) {
 
-	var message events.DataGeneratedEvent
+	var message events.DataProcessedEvent
 
 	err := json.Unmarshal(msg.Data, &message)
 	if err != nil {
@@ -43,27 +42,7 @@ func (c handler) Handle(msg consumer.Message) {
 		return
 	}
 
-	c.logger.Info("received a message", slog.String("id", message.Id), slog.String("data", message.Data))
+	c.logger.Info("handled post processed event", slog.String("id", message.Id), slog.String("data", message.Data))
 
-	cmd := commands.CreateProcessedItemCommand{
-		Data: message.Data,
-	}
-
-	err = c.service.RunWithUnitOfWork(c.ctx, func(s service.Service) error {
-		return s.Commands.CreateProcessedItem(c.ctx, cmd)
-	})
-
-	if err != nil {
-		c.logger.Error("failed to persist processed item", slog.Any("error", err))
-		err = msg.Nack(true)
-		time.Sleep(200 * time.Millisecond)
-		if err != nil {
-			c.logger.Error("failed to nack message", slog.Any("error", err))
-		}
-	} else {
-		err = msg.Ack()
-		if err != nil {
-			c.logger.Error("failed to ack message", slog.Any("error", err))
-		}
-	}
+	msg.Ack()
 }

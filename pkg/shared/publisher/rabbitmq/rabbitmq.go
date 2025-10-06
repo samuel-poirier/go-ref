@@ -1,35 +1,31 @@
-package infra
+package rabbitmq
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
 
-	amqp "github.com/rabbitmq/amqp091-go"
-	events "github.com/samuel-poirier/go-ref/events"
-	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
+	"github.com/rabbitmq/amqp091-go"
+	"github.com/samuel-poirier/go-ref/shared/publisher"
 )
 
 type RabbitMqPublisher struct {
 	connectionString string
-	queueName        string
 	logger           *slog.Logger
-	eventChannel     *chan events.Message
+	eventChannel     *chan publisher.MessageEnvelope
 }
 
-func NewRabbitMqPublisher(connectionString, queueName string, logger *slog.Logger) domain.Publisher {
-	eventChannel := make(chan events.Message)
+func NewRabbitMqPublisher(connectionString string, logger *slog.Logger) publisher.Publisher {
+	eventChannel := make(chan publisher.MessageEnvelope)
 	return &RabbitMqPublisher{
 		connectionString: connectionString,
-		queueName:        queueName,
 		logger:           logger,
 		eventChannel:     &eventChannel,
 	}
 }
 
-func (publisher *RabbitMqPublisher) Publish(message events.Message) error {
+func (publisher *RabbitMqPublisher) Publish(message publisher.MessageEnvelope) error {
 	if publisher.eventChannel == nil {
 		return fmt.Errorf("failed to publish, publishing channel not initialized")
 	}
@@ -42,12 +38,12 @@ func (publisher *RabbitMqPublisher) Close() {
 		close(*publisher.eventChannel)
 	}
 }
-func (publisher *RabbitMqPublisher) Initialize(ctx context.Context) error {
-	if publisher.eventChannel == nil {
+func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
+	if pub.eventChannel == nil {
 		return fmt.Errorf("failed to initialize publisher with nil publishing channel")
 	}
 
-	conn, err := amqp.Dial(publisher.connectionString)
+	conn, err := amqp091.Dial(pub.connectionString)
 
 	if err != nil {
 		return err
@@ -71,24 +67,11 @@ func (publisher *RabbitMqPublisher) Initialize(ctx context.Context) error {
 		}
 	}()
 
-	q, err := ch.QueueDeclare(
-		publisher.queueName, // name
-		true,                // durable
-		false,               // delete when unused
-		false,               // exclusive
-		false,               // no-wait
-		nil,                 // arguments
-	)
-
-	if err != nil {
-		return err
-	}
-
-	messageBuffer := make([]events.Message, 0)
+	messageBuffer := make([]publisher.MessageEnvelope, 0)
 	processingChannel := make(chan struct{})
 
 	go func() {
-		for message := range *publisher.eventChannel {
+		for message := range *pub.eventChannel {
 			messageBuffer = append(messageBuffer, message)
 			go func() { processingChannel <- struct{}{} }()
 		}
@@ -102,25 +85,33 @@ func (publisher *RabbitMqPublisher) Initialize(ctx context.Context) error {
 		for range processingChannel {
 			message := messageBuffer[0]
 			messageBuffer = messageBuffer[1:]
-			json, err := json.Marshal(message)
+			q, err := ch.QueueDeclare(
+				message.QueueName, // name
+				true,              // durable
+				false,             // delete when unused
+				false,             // exclusive
+				false,             // no-wait
+				nil,               // arguments
+			)
 
 			if err != nil {
-				publisher.logger.Error("failed publishing", slog.Any("error", err))
-			} else {
-				ch, conn = ensureChannelIsOpen(ch, conn, publisher)
-				err := ch.Publish(
-					"",
-					q.Name,
-					true,
-					false,
-					amqp.Publishing{
-						ContentType: "application/json",
-						Body:        json,
-					},
-				)
-				if err != nil {
-					publisher.logger.Error("failed publishing", slog.Any("error", err))
-				}
+				pub.logger.Error("failed to declare queue", slog.Any("error", err))
+				continue
+			}
+
+			ch, conn = ensureChannelIsOpen(ch, conn, pub)
+			err = ch.Publish(
+				"",
+				q.Name,
+				true,
+				false,
+				amqp091.Publishing{
+					ContentType: "application/json",
+					Body:        message.Message,
+				},
+			)
+			if err != nil {
+				pub.logger.Error("failed publishing", slog.Any("error", err))
 			}
 		}
 	}()
@@ -130,10 +121,10 @@ func (publisher *RabbitMqPublisher) Initialize(ctx context.Context) error {
 	return nil
 }
 
-func ensureChannelIsOpen(ch *amqp.Channel, conn *amqp.Connection, publisher *RabbitMqPublisher) (*amqp.Channel, *amqp.Connection) {
+func ensureChannelIsOpen(ch *amqp091.Channel, conn *amqp091.Connection, publisher *RabbitMqPublisher) (*amqp091.Channel, *amqp091.Connection) {
 	var err error
 	for ch == nil || ch.IsClosed() {
-		conn, err = amqp.Dial(publisher.connectionString)
+		conn, err = amqp091.Dial(publisher.connectionString)
 
 		if err != nil {
 			publisher.logger.Warn("failed to re-open closed connection... retrying", slog.Any("error", err))

@@ -10,17 +10,18 @@ import (
 	"time"
 
 	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
+	"github.com/samuel-poirier/go-ref/shared/publisher"
 )
 
 type App struct {
 	config            AppConfig
 	logger            *slog.Logger
-	publisher         *domain.Publisher
+	publisher         *publisher.Publisher
 	backgroundWorkers *[]domain.BackgroundWorker
 	httpServer        *http.Server
 }
 
-func New(config AppConfig, logger *slog.Logger, publisher *domain.Publisher, workers *[]domain.BackgroundWorker, httpServer *http.Server) *App {
+func New(config AppConfig, logger *slog.Logger, publisher *publisher.Publisher, workers *[]domain.BackgroundWorker, httpServer *http.Server) *App {
 	return &App{
 		config:            config,
 		logger:            logger,

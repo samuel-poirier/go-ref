@@ -11,7 +11,6 @@ import (
 type AppConfig struct {
 	Hostname                 string
 	Addr                     string
-	QueueName                string
 	RabbitMqConnectionString string
 }
 
@@ -27,7 +26,6 @@ func LoadAppConfig(path string) (*AppConfig, error) {
 	config := AppConfig{
 		Hostname:                 env.GetEnvOrDefault("APP_HOSTNAME", "localhost"),
 		Addr:                     fmt.Sprintf(":%s", env.GetEnvOrDefault("APP_PORT", "8080")),
-		QueueName:                env.GetEnvOrDefault("QUEUE_NAME", "demo-queue"),
 		RabbitMqConnectionString: env.GetEnvOrDefault("RABBIT_MQ_CONNECTION_STRING", ""),
 	}
 
@@ -50,10 +48,6 @@ func (c *AppConfig) Validate() error {
 	}
 	if c.Addr == "" {
 		return fmt.Errorf("app port not configured")
-	}
-
-	if c.QueueName == "" {
-		return fmt.Errorf("queue name not configured")
 	}
 
 	if c.RabbitMqConnectionString == "" {

@@ -10,6 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type Outbox struct {
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	ScheduledAt    time.Time
+	Metadata       []byte
+	Payload        []byte
+	TimesAttempted int32
+}
+
 type ProcessedItem struct {
 	ID            uuid.UUID
 	ProcessedAt   time.Time

@@ -11,7 +11,6 @@ func TestAppConfigValidate(t *testing.T) {
 	validConfig := app.AppConfig{
 		Hostname:                 "a",
 		Addr:                     "a",
-		QueueName:                "a",
 		RabbitMqConnectionString: "a",
 	}
 	t.Run("Test valid", func(t *testing.T) {
@@ -21,11 +20,6 @@ func TestAppConfigValidate(t *testing.T) {
 	t.Run("Test nil config", func(t *testing.T) {
 		var config *app.AppConfig = nil
 		assert.EqualError(t, config.Validate(), "nil app config")
-	})
-	t.Run("Test missing queue name", func(t *testing.T) {
-		config := validConfig
-		config.QueueName = ""
-		assert.EqualError(t, config.Validate(), "queue name not configured")
 	})
 	t.Run("Test missing connection string", func(t *testing.T) {
 		config := validConfig

@@ -10,15 +10,16 @@ import (
 	"github.com/google/uuid"
 	events "github.com/samuel-poirier/go-ref/events"
 	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
+	"github.com/samuel-poirier/go-ref/shared/publisher"
 )
 
 type PeriodicPublisherMessageBackgroundWorker struct {
 	sleepDuration time.Duration
-	publisher     *domain.Publisher
+	publisher     *publisher.Publisher
 	logger        *slog.Logger
 }
 
-func NewPeriodicPublisherBackgroundWorker(time time.Duration, publisher *domain.Publisher, logger *slog.Logger) domain.BackgroundWorker {
+func NewPeriodicPublisherBackgroundWorker(time time.Duration, publisher *publisher.Publisher, logger *slog.Logger) domain.BackgroundWorker {
 	return &PeriodicPublisherMessageBackgroundWorker{
 		sleepDuration: time,
 		publisher:     publisher,
@@ -31,7 +32,7 @@ func (w *PeriodicPublisherMessageBackgroundWorker) Start(context.Context) error 
 	if w.publisher == nil {
 		return fmt.Errorf("cannot start with nil publisher")
 	}
-	publisher := *w.publisher
+	pub := *w.publisher
 
 	if w.logger == nil {
 		return fmt.Errorf("cannot start with nil logger")
@@ -48,15 +49,21 @@ func (w *PeriodicPublisherMessageBackgroundWorker) Start(context.Context) error 
 
 		logger.Info("publishing message", slog.Int("iteration", i), slog.String("id", id.String()))
 
-		message := events.Message{
+		message := events.DataGeneratedEvent{
 			Id:   id.String(),
 			Data: strconv.Itoa(i),
 		}
 
-		err := publisher.Publish(message)
+		m, err := publisher.NewMessageEnvelope(message)
 
 		if err != nil {
 			logger.Error("error while publishing message", slog.Int("iteration", i), slog.String("id", id.String()), slog.Any("error", err))
+		} else {
+			err = pub.Publish(m)
+
+			if err != nil {
+				logger.Error("error while publishing message", slog.Int("iteration", i), slog.String("id", id.String()), slog.Any("error", err))
+			}
 		}
 
 		select {

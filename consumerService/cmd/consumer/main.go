@@ -11,6 +11,7 @@ import (
 	"github.com/samuel-poirier/go-ref/consumer/internal/app"
 	"github.com/samuel-poirier/go-ref/consumer/internal/infra/rabbitmq/consumer"
 	"github.com/samuel-poirier/go-ref/shared/env"
+	"github.com/samuel-poirier/go-ref/shared/publisher/rabbitmq"
 )
 
 //	@title			Go PubSub Demo Consumer API
@@ -40,7 +41,9 @@ func main() {
 
 	consumer := consumer.New(*config, logger)
 
-	app := app.New(*config, logger, &consumer, &http.Server{})
+	publisher := rabbitmq.NewRabbitMqPublisher(config.RabbitMqConnectionString, logger)
+
+	app := app.New(*config, logger, &consumer, &publisher, &http.Server{})
 
 	if err := app.Start(ctx); err != nil {
 		logger.Error("failed to start app", slog.Any("error", err))

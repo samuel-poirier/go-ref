@@ -1,6 +1,11 @@
 package events
 
-type Message struct {
-  Id string `json:"id"`
-  Data string `json:"data"`
+type DataGeneratedEvent struct {
+	Id   string `json:"id"`
+	Data string `json:"data"`
+}
+
+type DataProcessedEvent struct {
+	Id   string `json:"id"`
+	Data string `json:"data"`
 }

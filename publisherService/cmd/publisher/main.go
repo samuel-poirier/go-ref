@@ -14,6 +14,7 @@ import (
 	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
 	"github.com/samuel-poirier/go-ref/publisher/internal/infra"
 	"github.com/samuel-poirier/go-ref/shared/env"
+	"github.com/samuel-poirier/go-ref/shared/publisher/rabbitmq"
 )
 
 //	@title			Go PubSub Demo Publisher API
@@ -40,7 +41,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	publisher := infra.NewRabbitMqPublisher(config.RabbitMqConnectionString, config.QueueName, logger)
+	publisher := rabbitmq.NewRabbitMqPublisher(config.RabbitMqConnectionString, logger)
 
 	workers := []domain.BackgroundWorker{
 		infra.NewPeriodicPublisherBackgroundWorker(2*time.Second, &publisher, logger),

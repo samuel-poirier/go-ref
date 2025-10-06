@@ -18,7 +18,7 @@ import (
 	"github.com/samuel-poirier/go-ref/events"
 	"github.com/samuel-poirier/go-ref/publisher/internal/app"
 	"github.com/samuel-poirier/go-ref/publisher/internal/domain"
-	"github.com/samuel-poirier/go-ref/publisher/internal/infra"
+	rabbitPublisher "github.com/samuel-poirier/go-ref/shared/publisher/rabbitmq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -46,10 +46,9 @@ func TestAppIntegrationTests(t *testing.T) {
 		return
 	}
 
-	queueName := "queue-name"
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	publisher := infra.NewRabbitMqPublisher(rabbitmqUrl, queueName, logger)
+	publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl, logger)
 
 	conn, err := amqp091.Dial(rabbitmqUrl)
 	require.NoError(t, err)
@@ -76,7 +75,6 @@ func TestAppIntegrationTests(t *testing.T) {
 		addr := ":" + port
 		config := app.AppConfig{
 			Addr:                     addr,
-			QueueName:                "queue-name",
 			RabbitMqConnectionString: rabbitmqUrl,
 		}
 		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
@@ -111,7 +109,6 @@ func TestAppIntegrationTests(t *testing.T) {
 		addr := ":" + port
 		config := app.AppConfig{
 			Addr:                     addr,
-			QueueName:                "queue-name",
 			RabbitMqConnectionString: rabbitmqUrl,
 		}
 		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
@@ -151,11 +148,11 @@ func TestAppIntegrationTests(t *testing.T) {
 		reqBodyString := string(bytedata)
 		assert.Equal(t, reqBodyString, "hello world")
 
-		msgs, err := ch.Consume(config.QueueName, "", true, false, false, false, nil)
+		msgs, err := ch.Consume("DataGeneratedEvent", "", true, false, false, false, nil)
 		require.NoError(t, err)
 		consumedMessage := <-msgs
 
-		var message events.Message
+		var message events.DataGeneratedEvent
 
 		err = json.Unmarshal(consumedMessage.Body, &message)
 		if err != nil {
