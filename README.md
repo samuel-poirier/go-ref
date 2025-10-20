@@ -1,4 +1,15 @@
+
 # Introduction
+
+<!--toc:start-->
+- [Introduction](#introduction)
+  - [Getting started](#getting-started)
+  - [Guiding Principles](#guiding-principles)
+  - [Architecture Overview](#architecture-overview)
+  - [Software Architecture Flow](#software-architecture-flow)
+    - [Demo concepts](#demo-concepts)
+    - [Dev tool dependencies](#dev-tool-dependencies)
+<!--toc:end-->
 
 This repository is a simple demo playground to test out golang publisher/consumer microservices using RabbitMQ as a message broker and docker with hot reload using air.
 
