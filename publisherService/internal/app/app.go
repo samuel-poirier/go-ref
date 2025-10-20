@@ -48,17 +48,27 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	publisher := *a.publisher
 	a.logger.Info("publisher service starting")
 
-	stopping := false
-	go func() {
+	pubStoppedWg := sync.WaitGroup{}
+	pubStoppedWg.Go(func() {
 		defer publisher.Close()
-		for !stopping { // loop until cancel signal
+		for { // loop until cancel signal
 			err := publisher.Initialize(ctx)
 			if err != nil {
 				a.logger.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
 			}
 
-			time.Sleep(1 * time.Second)
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				time.Sleep(1 * time.Second)
+			}
 		}
+	})
+
+	defer func() {
+		a.logger.Info("publisher service stopping")
+		pubStoppedWg.Wait()
 	}()
 
 	router, err := a.loadRoutes()
@@ -103,9 +113,6 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	case err := <-errCh:
 		return err
 	}
-	stopping = true
-
-	a.logger.Info("publisher service stopping")
 
 	return nil
 }

@@ -4,12 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"log/slog"
-	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"sync"
 	"testing"
@@ -29,11 +26,8 @@ func TestAppIntegrationTests(t *testing.T) {
 	ctx := t.Context()
 
 	rabbitmqContainer, err := rabbitmq.Run(ctx, "rabbitmq:4.1.2-management-alpine", rabbitmq.WithAdminUsername("guest"), rabbitmq.WithAdminPassword("guest"))
-	defer func() {
-		if err := testcontainers.TerminateContainer(rabbitmqContainer); err != nil {
-			log.Printf("failed to terminate container: %s", err)
-		}
-	}()
+
+	defer testcontainers.TerminateContainer(rabbitmqContainer)
 
 	if err != nil {
 		t.Errorf("failed to start container: %s", err)
@@ -48,8 +42,6 @@ func TestAppIntegrationTests(t *testing.T) {
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl, logger)
-
 	conn, err := amqp091.Dial(rabbitmqUrl)
 	require.NoError(t, err)
 	defer conn.Close()
@@ -59,20 +51,10 @@ func TestAppIntegrationTests(t *testing.T) {
 	defer ch.Close()
 
 	t.Run("Application starts and stops gracefully", func(t *testing.T) {
+		publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl, logger)
 		ts := httptest.NewServer(nil)
 		defer ts.Close()
-		u, err := url.Parse(ts.URL)
-		if err == nil {
-			assert.NoError(t, err)
-			return
-		}
-
-		_, port, err := net.SplitHostPort(u.Host)
-		if err == nil {
-			assert.NoError(t, err)
-			return
-		}
-		addr := ":" + port
+		addr := ":0" // Assigns a random free port
 		config := app.AppConfig{
 			Addr:                     addr,
 			RabbitMqConnectionString: rabbitmqUrl,
@@ -93,23 +75,15 @@ func TestAppIntegrationTests(t *testing.T) {
 	})
 
 	t.Run("GET / publishes message to rabbit", func(t *testing.T) {
+		publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl, logger)
 		ts := httptest.NewServer(nil)
 		defer ts.Close()
-		u, err := url.Parse(ts.URL)
-		if err == nil {
-			assert.NoError(t, err)
-			return
-		}
 
-		_, port, err := net.SplitHostPort(u.Host)
-		if err == nil {
-			assert.NoError(t, err)
-			return
-		}
-		addr := ":" + port
+		addr := ":0" // Assigns a random free port
 		config := app.AppConfig{
 			Addr:                     addr,
 			RabbitMqConnectionString: rabbitmqUrl,
+			Hostname:                 "localhost",
 		}
 		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
 		wg := sync.WaitGroup{}
@@ -117,11 +91,26 @@ func TestAppIntegrationTests(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		errChan := make(chan error)
 
+		queueName := "DataGeneratedEvent"
+		q, err := ch.QueueDeclare(
+			queueName, // name
+			true,      // durable
+			false,     // delete when unused
+			false,     // exclusive
+			false,     // no-wait
+			nil,       // arguments
+		)
+
 		defer func() {
 			cancel()
 			err = <-errChan
 			assert.NoError(t, err)
 		}()
+
+		assert.NoError(t, err)
+		if err != nil {
+			return
+		}
 
 		go func() {
 			errChan <- app.Start(ctx, &wg)
@@ -129,10 +118,10 @@ func TestAppIntegrationTests(t *testing.T) {
 
 		wg.Wait()
 
-		resp, err := http.Get(ts.URL + "/")
+		resp, err := http.Get(ts.URL + "/api/v1/hello")
 
+		assert.NoError(t, err)
 		if err != nil {
-			assert.NoError(t, err)
 			return
 		}
 
@@ -140,15 +129,21 @@ func TestAppIntegrationTests(t *testing.T) {
 
 		bytedata, err := io.ReadAll(resp.Body)
 
+		assert.NoError(t, err)
 		if err != nil {
-			assert.NoError(t, err)
 			return
 		}
 
-		reqBodyString := string(bytedata)
-		assert.Equal(t, reqBodyString, "hello world")
+		var unmarshaledResp events.DataGeneratedEvent
 
-		msgs, err := ch.Consume("DataGeneratedEvent", "", true, false, false, false, nil)
+		err = json.Unmarshal(bytedata, &unmarshaledResp)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "PUBLISHED FROM HELLO WORLD ENDPOINT", unmarshaledResp.Data)
+
+		assert.NoError(t, err)
+		msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
+
 		require.NoError(t, err)
 		consumedMessage := <-msgs
 

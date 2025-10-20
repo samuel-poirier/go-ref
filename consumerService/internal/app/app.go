@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -73,25 +74,30 @@ func (a *App) Start(ctx context.Context) error {
 	outboxReader.StartBackgroundReader(ctx)
 
 	errCh := make(chan error, 1)
-	stopping := false
 
 	for _, handler := range consumerHandlers {
 		go func() {
-			registerConsumer(ctx, stopping, handler, msgConsumer, a)
+			registerConsumer(ctx, handler, msgConsumer, a)
 		}()
 	}
 
-	go func() {
+	pubStoppedWg := sync.WaitGroup{}
+	pubStoppedWg.Go(func() {
 		defer publisher.Close()
-		for !stopping { // loop until cancel signal
+		for { // loop until cancel signal
 			err := publisher.Initialize(ctx)
 			if err != nil {
 				a.logger.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
 			}
 
-			time.Sleep(1 * time.Second)
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				time.Sleep(1 * time.Second)
+			}
 		}
-	}()
+	})
 
 	router, err := a.loadRoutes(service)
 
@@ -120,14 +126,12 @@ func (a *App) Start(ctx context.Context) error {
 		return err
 	}
 
-	stopping = true
-
 	a.logger.Info("consumer service stopping")
-
+	pubStoppedWg.Wait()
 	return nil
 }
 
-func registerConsumer(ctx context.Context, stopping bool, handler consumer.ConsumerHandler, msgConsumer consumer.Consumer, a *App) {
+func registerConsumer(ctx context.Context, handler consumer.ConsumerHandler, msgConsumer consumer.Consumer, a *App) {
 	msgChan := make(chan consumer.Message)
 	defer close(msgChan)
 
@@ -135,11 +139,14 @@ func registerConsumer(ctx context.Context, stopping bool, handler consumer.Consu
 
 	go func(h consumer.ConsumerHandler, c <-chan consumer.Message) {
 		for message := range c {
-			if stopping {
+
+			select {
+			case <-ctx.Done():
 				message.Nack(true)
 				return
+			default:
+				h.Handle(message)
 			}
-			h.Handle(message)
 		}
 	}(handler, msgChan)
 
