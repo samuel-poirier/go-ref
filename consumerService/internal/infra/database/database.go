@@ -12,8 +12,13 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/samuel-poirier/go-ref/consumer/internal/config"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 //go:embed migrations/*.sql
@@ -70,6 +75,9 @@ func Connect(ctx context.Context, logger *slog.Logger) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
+	// Add query tracer for OpenTelemetry
+	config.ConnConfig.Tracer = &pgxTracer{tracer: otel.Tracer("postgresql")}
+
 	conn, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
@@ -97,4 +105,46 @@ func Connect(ctx context.Context, logger *slog.Logger) (*pgxpool.Pool, error) {
 	}
 
 	return conn, nil
+}
+
+// pgxTracer implements pgx.QueryTracer for OpenTelemetry
+type pgxTracer struct {
+	tracer trace.Tracer
+}
+
+type pgxTraceCtxKey struct{}
+
+func (t *pgxTracer) TraceQueryStart(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
+	if !trace.SpanFromContext(ctx).IsRecording() {
+		return ctx
+	}
+
+	ctx, span := t.tracer.Start(ctx, "db.query",
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(
+			attribute.String("db.system", "postgresql"),
+			attribute.String("db.statement", data.SQL),
+		),
+	)
+
+	return context.WithValue(ctx, pgxTraceCtxKey{}, span)
+}
+
+func (t *pgxTracer) TraceQueryEnd(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryEndData) {
+	span, ok := ctx.Value(pgxTraceCtxKey{}).(trace.Span)
+	if !ok {
+		return
+	}
+
+	if data.Err != nil {
+		span.RecordError(data.Err)
+		span.SetStatus(codes.Error, data.Err.Error())
+	} else {
+		span.SetStatus(codes.Ok, "query executed successfully")
+		span.SetAttributes(
+			attribute.Int64("db.rows_affected", data.CommandTag.RowsAffected()),
+		)
+	}
+
+	span.End()
 }

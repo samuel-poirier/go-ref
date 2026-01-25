@@ -80,7 +80,7 @@ _\*: Unit of work can be omitted if we only execute queries_
 | 7 | Middleware | x |
 | 8 | Dependency Injection | x |
 | 9 | Structured Logging | x |
-| 10 | OpenTelemetry Instrumentation | |
+| 10 | OpenTelemetry Instrumentation | x |
 | 11 | Message Broker Publisher | x |
 | 12 | Message Broker Consumer | x |
 | 13 | Message Broker Outbox Pattern | x |

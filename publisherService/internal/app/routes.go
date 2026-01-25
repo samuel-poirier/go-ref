@@ -8,6 +8,7 @@ import (
 	"github.com/samuel-poirier/go-ref/publisher/internal/api/hello"
 	"github.com/samuel-poirier/go-ref/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func (a *App) loadRoutes() (http.Handler, error) {
@@ -37,5 +38,15 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	chain := middleware.Chain(
 		middleware.Logging(a.logger),
 	)
-	return chain(router), nil
+
+	// Wrap with OpenTelemetry HTTP instrumentation
+	instrumentedHandler := otelhttp.NewHandler(
+		chain(router),
+		"publisher-http-server",
+		otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
+			return fmt.Sprintf("%s %s", r.Method, r.URL.Path)
+		}),
+	)
+
+	return instrumentedHandler, nil
 }

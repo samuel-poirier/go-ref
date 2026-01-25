@@ -8,7 +8,7 @@ import (
 
 type Publisher interface {
 	Initialize(context.Context) error
-	Publish(message MessageEnvelope) error
+	Publish(ctx context.Context, message MessageEnvelope) error
 	Close()
 }
 
