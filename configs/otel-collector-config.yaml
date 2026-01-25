@@ -1,0 +1,61 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  prometheus/collector:
+    config:
+      scrape_configs:
+        - job_name: "opentelemetry-collector"
+          static_configs:
+            - targets: ["localhost:8888"]
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 8000 # Set this limit based on hardware resources
+    spike_limit_mib: 1600 # Currently set at 20% of limit_mb
+
+  batch:
+    send_batch_max_size: 1000
+    send_batch_size: 10
+    timeout: 100ms
+
+  transform/remove-duplicate-attributes:
+    log_statements:
+        - statements:
+            # cache is a field exposed by OTTL that is a temporary storage place for complex operations.
+            - merge_maps(log.cache, log.attributes, "upsert")
+            - keep_keys(log.attributes, [])
+            - merge_maps(log.attributes, log.cache, "insert")
+
+exporters:
+  otlp/data-prepper-traces:
+    endpoint: data-prepper:21890
+    tls:
+      insecure: true
+  otlp/data-prepper-metrics:
+    endpoint: data-prepper:21891
+    tls:
+      insecure: true
+  otlp/data-prepper-logs:
+    endpoint: data-prepper:21892
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/data-prepper-traces]
+    metrics:
+      receivers: [otlp, prometheus/collector]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/data-prepper-metrics]
+    logs:
+      receivers: [otlp]
+      processors: [transform/remove-duplicate-attributes, memory_limiter, batch]
+      exporters: [otlp/data-prepper-logs]

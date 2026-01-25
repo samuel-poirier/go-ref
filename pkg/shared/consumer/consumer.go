@@ -14,6 +14,8 @@ type ConsumerHandler interface {
 type Message struct {
 	Data        []byte
 	Redelivered bool
+	Headers     map[string]interface{}
 	Ack         func() error
 	Nack        func(requeue bool) error
+	Context     context.Context // Trace context for log correlation
 }

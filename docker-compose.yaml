@@ -3,6 +3,7 @@ services:
     image: localhost/go-ref-publisher
     depends_on:
       - rabbitmq
+      - otel-collector
     build:
       context: publisherService
       dockerfile: Dockerfile.development
@@ -13,13 +14,22 @@ services:
       - APP_ENV=dev
       - APP_CONFIG=/app/publisherService/configs/.env
       - RABBIT_MQ_CONNECTION_STRING=amqp://guest:guest@rabbitmq:5672
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_SERVICE_NAME=publisher
+      - OTEL_SERVICE_VERSION=1.0.0
+      - OTEL_TRACES_SAMPLER=always_on
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=dev
     volumes:
       - .:/app        # mount source code
+    networks:
+      - default
+      - observability
   consumer:
     image: localhost/go-ref-consumer
     depends_on:
       - rabbitmq
       - db
+      - otel-collector
     build:
       context: consumerService
       dockerfile: Dockerfile.development
@@ -36,8 +46,16 @@ services:
       - POSTGRES_PASSWORD=user
       - POSTGRES_DB=demo_pub_sub
       - POSTGRES_SSLMODE=disable
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_SERVICE_NAME=consumer
+      - OTEL_SERVICE_VERSION=1.0.0
+      - OTEL_TRACES_SAMPLER=always_on
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=dev
     volumes:
       - .:/app        # mount source code
+    networks:
+      - default
+      - observability
   rabbitmq:
     image: rabbitmq:4.1.2-management-alpine
     ports:
@@ -58,7 +76,84 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data # Persists database data
 
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.122.0
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./configs/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+    depends_on:
+      - data-prepper
+    networks:
+      - observability
+
+  # Data Prepper
+  data-prepper:
+    image: opensearchproject/data-prepper:2.11.0
+    container_name: data-prepper
+    volumes:
+      - ./configs/data-prepper-config.yaml:/usr/share/data-prepper/pipelines/pipelines.yaml
+      - ./configs/data-prepper.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
+    ports:
+      - "21890:21890" # OTel traces receiver
+      - "21891:21891" # OTel metrics receiver
+    depends_on:
+      - opensearch
+    networks:
+      - observability
+
+  # OpenSearch
+  opensearch:
+    image: opensearchproject/opensearch:3.0.0
+    container_name: opensearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"  # Disable for development
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"  # REST API
+      - "9600:9600"  # Performance Analyzer
+    networks:
+      - observability
+
+  # OpenSearch Dashboards
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:3.0.0
+    container_name: opensearch-dashboards
+    ports:
+      - "5601:5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"  # Disable for development
+    depends_on:
+      - opensearch
+    networks:
+      - observability
+
+networks:
+  observability:
+    driver: bridge
+
 volumes:
   lab_rabbitmq_data:
   lab_rabbitmq_logs:
   db_data:
+  opensearch_data:

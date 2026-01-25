@@ -25,6 +25,8 @@ func NewHandler(publisher *publisher.Publisher) Handler {
 // @Success		200	{object}	events.Message
 // @Router			/api/v1/hello [get]
 func (handler *Handler) HelloWorld(w http.ResponseWriter, r *http.Request) {
+	// Use request context to correlate traces
+	ctx := r.Context()
 
 	pub := *handler.publisher
 	message := events.DataGeneratedEvent{
@@ -37,7 +39,8 @@ func (handler *Handler) HelloWorld(w http.ResponseWriter, r *http.Request) {
 			response.WriteInternalServerError(w, err.Error())
 			return
 		} else {
-			pub.Publish(m)
+			// Pass request context to link publish operation to HTTP request trace
+			pub.Publish(ctx, m)
 		}
 	}
 

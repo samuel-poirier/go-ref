@@ -29,20 +29,22 @@ func (c handler) GetQueueName() string {
 }
 
 func (c handler) Handle(msg consumer.Message) {
+	// Use the message context which contains trace information
+	ctx := msg.Context
 
 	var message events.DataProcessedEvent
 
 	err := json.Unmarshal(msg.Data, &message)
 	if err != nil {
-		c.logger.Error("failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
+		c.logger.ErrorContext(ctx, "failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
 		err = msg.Nack(false)
 		if err != nil {
-			c.logger.Error("failed to nack message", slog.Any("error", err))
+			c.logger.ErrorContext(ctx, "failed to nack message", slog.Any("error", err))
 		}
 		return
 	}
 
-	c.logger.Info("handled post processed event", slog.String("id", message.Id), slog.String("data", message.Data))
+	c.logger.InfoContext(ctx, "handled post processed event", slog.String("id", message.Id), slog.String("data", message.Data))
 
 	msg.Ack()
 }

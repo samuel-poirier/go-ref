@@ -27,7 +27,9 @@ func logging(logger *slog.Logger, next http.Handler) http.Handler {
 		next.ServeHTTP(wrapped, r)
 		duration := time.Since(start)
 
-		logger.Info(
+		// Use InfoContext to include trace context from the request
+		logger.InfoContext(
+			r.Context(),
 			"handled request",
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
