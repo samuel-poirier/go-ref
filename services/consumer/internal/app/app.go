@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	postprocessed "github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/postProcessed"
+	postprocessed "github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/post_processed"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/processed"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-ref/consumer/internal/infra/database"

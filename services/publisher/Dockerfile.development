@@ -6,7 +6,7 @@ RUN go install github.com/air-verse/air@v1.62.0
 RUN apk add --no-cache git
 
 # Set working directory
-WORKDIR /app/consumerService
+WORKDIR /app/services/publisher
 
 # Copy the rest of the service code
 COPY . .
