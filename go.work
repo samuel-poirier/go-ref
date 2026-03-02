@@ -1,9 +1,9 @@
 go 1.25.1
 
 use (
-	./consumerService
+	./services/consumer
 	./pkg/events
 	./pkg/shared
-	./publisherService
+	./services/publisher
 )
 
