@@ -1,3 +1,3 @@
 module github.com/samuel-poirier/go-ref/events
 
-go 1.25.1
+go 1.26.0

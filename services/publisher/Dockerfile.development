@@ -1,5 +1,5 @@
 # Stage 1: Base image with Go and Air installed
-FROM golang:1.25-alpine AS dev
+FROM golang:1.26-alpine AS dev
 
 # Install required tools (git + build-base for cgo, air for hot reload)
 RUN go install github.com/air-verse/air@v1.62.0

@@ -1,5 +1,5 @@
 # Stage 1: Base image with Go and Air installed
-FROM golang:1.25-alpine AS build
+FROM golang:1.26-alpine AS build
 
 # Set working directory
 WORKDIR /app
