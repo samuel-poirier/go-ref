@@ -29,16 +29,14 @@ type OutboxReader[T OutboxMessageProvider] interface {
 
 type Reader[T OutboxMessageProvider] struct {
 	publisher         publisher.Publisher
-	logger            slog.Logger
 	processingChannel <-chan struct{}
 	SignalChannel     chan<- struct{}
 	outboxReader      OutboxReader[T]
 }
 
-func NewReader[T OutboxMessageProvider](logger slog.Logger, outboxReader OutboxReader[T], publisher publisher.Publisher) Reader[T] {
+func NewReader[T OutboxMessageProvider](outboxReader OutboxReader[T], publisher publisher.Publisher) Reader[T] {
 	processingChannel := make(chan struct{})
 	return Reader[T]{
-		logger:            logger,
 		processingChannel: processingChannel,
 		SignalChannel:     processingChannel,
 		outboxReader:      outboxReader,
@@ -47,13 +45,13 @@ func NewReader[T OutboxMessageProvider](logger slog.Logger, outboxReader OutboxR
 }
 
 func (r Reader[T]) StartBackgroundReader(ctx context.Context) {
-	r.logger.InfoContext(ctx, "starting outbox reader")
+	slog.InfoContext(ctx, "starting outbox reader")
 	go r.processMessages(ctx)
 	go r.scheduleReads(ctx, 500*time.Millisecond)
 }
 
 func (r Reader[T]) processMessages(ctx context.Context) {
-	defer r.logger.InfoContext(ctx, "stopping outbox reader")
+	defer slog.InfoContext(ctx, "stopping outbox reader")
 	tracer := otel.Tracer("outbox-reader")
 
 	for {
@@ -71,7 +69,7 @@ func (r Reader[T]) processMessages(ctx context.Context) {
 			}
 
 			if err != nil {
-				r.logger.WarnContext(ctx, "failed to find first message, retrying...", slog.Any("error", err))
+				slog.WarnContext(ctx, "failed to find first message, retrying...", slog.Any("error", err))
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to find outbox message")
 				span.End()
@@ -91,7 +89,7 @@ func (r Reader[T]) processMessages(ctx context.Context) {
 			err = json.Unmarshal(metadata, &metadataMap)
 
 			if err != nil {
-				r.logger.WarnContext(ctx, "failed to deserialize metadata map. skipping corrupted message", slog.Any("error", err))
+				slog.WarnContext(ctx, "failed to deserialize metadata map. skipping corrupted message", slog.Any("error", err))
 				r.outboxReader.DeleteOutboxMessageById(ctx, id)
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to deserialize metadata")
@@ -116,7 +114,7 @@ func (r Reader[T]) processMessages(ctx context.Context) {
 			err = r.publisher.Publish(ctx, m)
 
 			if err != nil {
-				r.logger.WarnContext(ctx, "published message, bug failed to delete, retrying...", slog.Any("error", err))
+				slog.WarnContext(ctx, "published message, bug failed to delete, retrying...", slog.Any("error", err))
 				r.outboxReader.IncrementOutboxMessageTimesAttemptedById(ctx, id)
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to publish message")
@@ -127,7 +125,7 @@ func (r Reader[T]) processMessages(ctx context.Context) {
 			err = r.outboxReader.DeleteOutboxMessageById(ctx, id)
 
 			if err != nil {
-				r.logger.WarnContext(ctx, "published message, bug failed to delete, retrying...", slog.Any("error", err))
+				slog.WarnContext(ctx, "published message, bug failed to delete, retrying...", slog.Any("error", err))
 				r.outboxReader.IncrementOutboxMessageTimesAttemptedById(ctx, id)
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to delete outbox message")

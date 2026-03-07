@@ -13,15 +13,13 @@ import (
 )
 
 type handler struct {
-	logger  slog.Logger
 	service *service.Service
 	ctx     context.Context
 }
 
-func New(service *service.Service, logger slog.Logger, ctx context.Context) *handler {
+func New(service *service.Service, ctx context.Context) *handler {
 	return &handler{
 		service: service,
-		logger:  logger,
 		ctx:     ctx,
 	}
 }
@@ -37,15 +35,15 @@ func (c handler) Handle(msg consumer.Message) {
 
 	err := json.Unmarshal(msg.Data, &message)
 	if err != nil {
-		c.logger.ErrorContext(ctx, "failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
+		slog.ErrorContext(ctx, "failed to unmarshal json message received from rabbitmq", slog.Any("error", err))
 		err = msg.Nack(false)
 		if err != nil {
-			c.logger.ErrorContext(ctx, "failed to nack message", slog.Any("error", err))
+			slog.ErrorContext(ctx, "failed to nack message", slog.Any("error", err))
 		}
 		return
 	}
 
-	c.logger.InfoContext(ctx, "received a message", slog.String("id", message.Id), slog.String("data", message.Data))
+	slog.InfoContext(ctx, "received a message", slog.String("id", message.Id), slog.String("data", message.Data))
 
 	cmd := commands.CreateProcessedItemCommand{
 		Data: message.Data,
@@ -56,16 +54,16 @@ func (c handler) Handle(msg consumer.Message) {
 	})
 
 	if err != nil {
-		c.logger.ErrorContext(ctx, "failed to persist processed item", slog.Any("error", err))
+		slog.ErrorContext(ctx, "failed to persist processed item", slog.Any("error", err))
 		err = msg.Nack(true)
 		time.Sleep(200 * time.Millisecond)
 		if err != nil {
-			c.logger.ErrorContext(ctx, "failed to nack message", slog.Any("error", err))
+			slog.ErrorContext(ctx, "failed to nack message", slog.Any("error", err))
 		}
 	} else {
 		err = msg.Ack()
 		if err != nil {
-			c.logger.ErrorContext(ctx, "failed to ack message", slog.Any("error", err))
+			slog.ErrorContext(ctx, "failed to ack message", slog.Any("error", err))
 		}
 	}
 }

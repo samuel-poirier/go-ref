@@ -16,7 +16,6 @@ import (
 
 type RabbitMqConsumer struct {
 	connectionString string
-	logger           *slog.Logger
 }
 
 func (c *RabbitMqConsumer) Subscribe(queueName string, msgChan *chan<- consumer.Message, ctx context.Context) error {
@@ -66,7 +65,7 @@ func (c *RabbitMqConsumer) Subscribe(queueName string, msgChan *chan<- consumer.
 		return err
 	}
 
-	c.logger.InfoContext(ctx, "consumer listening for messages...")
+	slog.InfoContext(ctx, "consumer listening for messages...")
 	processingChannel := *msgChan
 	tracer := otel.Tracer("rabbitmq-consumer")
 
@@ -121,15 +120,14 @@ func (c *RabbitMqConsumer) Subscribe(queueName string, msgChan *chan<- consumer.
 		processingChannel <- *message
 	}
 
-	c.logger.InfoContext(ctx, "consumer stopped")
+	slog.InfoContext(ctx, "consumer stopped")
 
 	return nil
 }
 
-func New(config app.AppConfig, logger *slog.Logger) consumer.Consumer {
+func New(config app.AppConfig) consumer.Consumer {
 	return &RabbitMqConsumer{
 		connectionString: config.RabbitMqConnectionString,
-		logger:           logger,
 	}
 }
 

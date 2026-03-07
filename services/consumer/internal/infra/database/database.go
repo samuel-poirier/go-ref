@@ -69,7 +69,7 @@ func dbURL() (string, error) {
 	return cfg.URL(), nil
 }
 
-func Connect(ctx context.Context, logger *slog.Logger) (*pgxpool.Pool, error) {
+func Connect(ctx context.Context) (*pgxpool.Pool, error) {
 	config, err := loadConfig()
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func Connect(ctx context.Context, logger *slog.Logger) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("could not connect to database: %w", err)
 	}
 
-	logger.Debug("Running migrations")
+	slog.Debug("Running migrations")
 
 	url, err := dbURL()
 	if err != nil {

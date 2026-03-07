@@ -36,7 +36,7 @@ func (a *App) loadRoutes() (http.Handler, error) {
 	// Create a middleware chain from the Chain function of the
 	// middleware package
 	chain := middleware.Chain(
-		middleware.Logging(a.logger),
+		middleware.Logging(),
 	)
 
 	// Wrap with OpenTelemetry HTTP instrumentation

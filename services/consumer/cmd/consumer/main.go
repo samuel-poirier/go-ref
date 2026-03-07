@@ -49,17 +49,20 @@ func main() {
 		tempLogger.Error("failed to initialize telemetry", slog.Any("error", err))
 		panic(1)
 	}
+
+	slog.SetDefault(logger)
+
 	defer func() {
 		if err := otelProvider.Shutdown(context.Background()); err != nil {
 			logger.Error("failed to shutdown telemetry", slog.Any("error", err))
 		}
 	}()
 
-	consumer := consumer.New(*config, logger)
+	consumer := consumer.New(*config)
 
-	publisher := rabbitmq.NewRabbitMqPublisher(config.RabbitMqConnectionString, logger)
+	publisher := rabbitmq.NewRabbitMqPublisher(config.RabbitMqConnectionString)
 
-	app := app.New(*config, logger, &consumer, &publisher, &http.Server{})
+	app := app.New(*config, &consumer, &publisher, &http.Server{})
 
 	if err := app.Start(ctx); err != nil {
 		logger.Error("failed to start app", slog.Any("error", err))

@@ -21,15 +21,13 @@ type messageWithContext struct {
 
 type RabbitMqPublisher struct {
 	connectionString string
-	logger           *slog.Logger
 	eventChannel     *chan messageWithContext
 }
 
-func NewRabbitMqPublisher(connectionString string, logger *slog.Logger) publisher.Publisher {
+func NewRabbitMqPublisher(connectionString string) publisher.Publisher {
 	eventChannel := make(chan messageWithContext)
 	return &RabbitMqPublisher{
 		connectionString: connectionString,
-		logger:           logger,
 		eventChannel:     &eventChannel,
 	}
 }
@@ -108,15 +106,15 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 
 			q, err := ch.QueueDeclare(
 				msgWithCtx.message.QueueName, // name
-				true,              // durable
-				false,             // delete when unused
-				false,             // exclusive
-				false,             // no-wait
-				nil,               // arguments
+				true,                         // durable
+				false,                        // delete when unused
+				false,                        // exclusive
+				false,                        // no-wait
+				nil,                          // arguments
 			)
 
 			if err != nil {
-				pub.logger.ErrorContext(spanCtx, "failed to declare queue", slog.Any("error", err))
+				slog.ErrorContext(spanCtx, "failed to declare queue", slog.Any("error", err))
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to declare queue")
 				span.End()
@@ -142,7 +140,7 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 				},
 			)
 			if err != nil {
-				pub.logger.ErrorContext(spanCtx, "failed publishing", slog.Any("error", err))
+				slog.ErrorContext(spanCtx, "failed publishing", slog.Any("error", err))
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to publish message")
 			} else {
@@ -163,7 +161,7 @@ func ensureChannelIsOpen(ctx context.Context, ch *amqp091.Channel, conn *amqp091
 		conn, err = amqp091.Dial(publisher.connectionString)
 
 		if err != nil {
-			publisher.logger.WarnContext(ctx, "failed to re-open closed connection... retrying", slog.Any("error", err))
+			slog.WarnContext(ctx, "failed to re-open closed connection... retrying", slog.Any("error", err))
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
@@ -171,7 +169,7 @@ func ensureChannelIsOpen(ctx context.Context, ch *amqp091.Channel, conn *amqp091
 		ch, err = conn.Channel()
 
 		if err != nil {
-			publisher.logger.WarnContext(ctx, "failed to re-open closed channel... retrying", slog.Any("error", err))
+			slog.WarnContext(ctx, "failed to re-open closed channel... retrying", slog.Any("error", err))
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}

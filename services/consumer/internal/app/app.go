@@ -22,17 +22,15 @@ import (
 
 type App struct {
 	config     AppConfig
-	logger     *slog.Logger
 	consumer   *consumer.Consumer
 	publisher  *publisher.Publisher
 	httpServer *http.Server
 	db         *pgxpool.Pool
 }
 
-func New(config AppConfig, logger *slog.Logger, consumer *consumer.Consumer, publisher *publisher.Publisher, httpServer *http.Server) *App {
+func New(config AppConfig, consumer *consumer.Consumer, publisher *publisher.Publisher, httpServer *http.Server) *App {
 	return &App{
 		config:     config,
-		logger:     logger,
 		consumer:   consumer,
 		publisher:  publisher,
 		httpServer: httpServer,
@@ -54,9 +52,9 @@ func (a *App) Start(ctx context.Context) error {
 	}
 
 	msgConsumer := *a.consumer
-	a.logger.Info("consumer service starting")
+	slog.Info("consumer service starting")
 
-	db, err := database.Connect(ctx, a.logger)
+	db, err := database.Connect(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -65,11 +63,11 @@ func (a *App) Start(ctx context.Context) error {
 
 	publisher := *a.publisher
 	repo := repository.New(a.db)
-	outboxReader := outbox.NewReader(*a.logger, repo, publisher)
+	outboxReader := outbox.NewReader(repo, publisher)
 	service := service.New(repo, a.db, outboxReader.SignalChannel)
 	consumerHandlers := make([]consumer.ConsumerHandler, 0)
-	consumerHandlers = append(consumerHandlers, processed.New(service, *a.logger, ctx))
-	consumerHandlers = append(consumerHandlers, postprocessed.New(service, *a.logger, ctx))
+	consumerHandlers = append(consumerHandlers, processed.New(service, ctx))
+	consumerHandlers = append(consumerHandlers, postprocessed.New(service, ctx))
 
 	outboxReader.StartBackgroundReader(ctx)
 
@@ -87,7 +85,7 @@ func (a *App) Start(ctx context.Context) error {
 		for { // loop until cancel signal
 			err := publisher.Initialize(ctx)
 			if err != nil {
-				a.logger.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
+				slog.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
 			}
 
 			select {
@@ -117,7 +115,7 @@ func (a *App) Start(ctx context.Context) error {
 		close(errCh)
 	}()
 
-	a.logger.Info("server running", slog.String("port", a.config.Addr))
+	slog.Info("server running", slog.String("port", a.config.Addr))
 	select {
 	// Wait until we receive SIGINT (ctrl+c on cli)
 	case <-ctx.Done():
@@ -126,7 +124,7 @@ func (a *App) Start(ctx context.Context) error {
 		return err
 	}
 
-	a.logger.Info("consumer service stopping")
+	slog.Info("consumer service stopping")
 	pubStoppedWg.Wait()
 	return nil
 }
@@ -150,13 +148,13 @@ func registerConsumer(ctx context.Context, handler consumer.ConsumerHandler, msg
 		}
 	}(handler, msgChan)
 
-	a.logger.Info("registering consumer", slog.String("queue", handler.GetQueueName()), slog.String("handler", fmt.Sprintf("%T", handler)))
+	slog.Info("registering consumer", slog.String("queue", handler.GetQueueName()), slog.String("handler", fmt.Sprintf("%T", handler)))
 
 	for {
 		err := msgConsumer.Subscribe(handler.GetQueueName(), &subscribeMsgChan, ctx)
 
 		if err != nil {
-			a.logger.Warn("failed to consumer, retrying...", slog.String("queue", handler.GetQueueName()), slog.String("handler", fmt.Sprintf("%T", handler)))
+			slog.Warn("failed to consumer, retrying...", slog.String("queue", handler.GetQueueName()), slog.String("handler", fmt.Sprintf("%T", handler)))
 			time.Sleep(500 * time.Millisecond)
 		}
 

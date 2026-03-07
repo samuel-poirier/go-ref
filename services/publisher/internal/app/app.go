@@ -15,16 +15,14 @@ import (
 
 type App struct {
 	config            AppConfig
-	logger            *slog.Logger
 	publisher         *publisher.Publisher
 	backgroundWorkers *[]domain.BackgroundWorker
 	httpServer        *http.Server
 }
 
-func New(config AppConfig, logger *slog.Logger, publisher *publisher.Publisher, workers *[]domain.BackgroundWorker, httpServer *http.Server) *App {
+func New(config AppConfig, publisher *publisher.Publisher, workers *[]domain.BackgroundWorker, httpServer *http.Server) *App {
 	return &App{
 		config:            config,
-		logger:            logger,
 		publisher:         publisher,
 		backgroundWorkers: workers,
 		httpServer:        httpServer,
@@ -46,7 +44,7 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 
 	publisher := *a.publisher
-	a.logger.Info("publisher service starting")
+	slog.Info("publisher service starting")
 
 	pubStoppedWg := sync.WaitGroup{}
 	pubStoppedWg.Go(func() {
@@ -54,7 +52,7 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		for { // loop until cancel signal
 			err := publisher.Initialize(ctx)
 			if err != nil {
-				a.logger.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
+				slog.Warn("failed to start publishing, retrying to reconnect in 1 sec", slog.Any("error", err))
 			}
 
 			select {
@@ -67,7 +65,7 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	})
 
 	defer func() {
-		a.logger.Info("publisher service stopping")
+		slog.Info("publisher service stopping")
 		pubStoppedWg.Wait()
 	}()
 
@@ -84,10 +82,10 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 
 	for i, worker := range *a.backgroundWorkers {
 		go func(index int, w domain.BackgroundWorker) {
-			a.logger.Info("starting background worker", slog.Int("index", index))
+			slog.Info("starting background worker", slog.Int("index", index))
 			err := w.Start(ctx)
 			if err != nil {
-				a.logger.Error("error returned from background worker", slog.Int("index", index), slog.Any("error", err))
+				slog.Error("error returned from background worker", slog.Int("index", index), slog.Any("error", err))
 				errCh <- fmt.Errorf("background worker failed with error: %w", err)
 			}
 		}(i, worker)
@@ -102,7 +100,7 @@ func (a *App) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		close(errCh)
 	}()
 
-	a.logger.Info("server running", slog.String("port", a.config.Addr))
+	slog.Info("server running", slog.String("port", a.config.Addr))
 
 	wg.Done()
 

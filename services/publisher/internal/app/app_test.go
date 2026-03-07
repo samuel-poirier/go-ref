@@ -41,6 +41,7 @@ func TestAppIntegrationTests(t *testing.T) {
 	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault((logger))
 
 	conn, err := amqp091.Dial(rabbitmqUrl)
 	require.NoError(t, err)
@@ -51,7 +52,7 @@ func TestAppIntegrationTests(t *testing.T) {
 	defer ch.Close()
 
 	t.Run("Application starts and stops gracefully", func(t *testing.T) {
-		publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl, logger)
+		publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl)
 		ts := httptest.NewServer(nil)
 		defer ts.Close()
 		addr := ":0" // Assigns a random free port
@@ -59,7 +60,7 @@ func TestAppIntegrationTests(t *testing.T) {
 			Addr:                     addr,
 			RabbitMqConnectionString: rabbitmqUrl,
 		}
-		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
+		app := app.New(config, &publisher, new([]domain.BackgroundWorker), ts.Config)
 		wg := sync.WaitGroup{}
 		wg.Add(1)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -75,7 +76,7 @@ func TestAppIntegrationTests(t *testing.T) {
 	})
 
 	t.Run("GET / publishes message to rabbit", func(t *testing.T) {
-		publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl, logger)
+		publisher := rabbitPublisher.NewRabbitMqPublisher(rabbitmqUrl)
 		ts := httptest.NewServer(nil)
 		defer ts.Close()
 
@@ -85,7 +86,7 @@ func TestAppIntegrationTests(t *testing.T) {
 			RabbitMqConnectionString: rabbitmqUrl,
 			Hostname:                 "localhost",
 		}
-		app := app.New(config, logger, &publisher, new([]domain.BackgroundWorker), ts.Config)
+		app := app.New(config, &publisher, new([]domain.BackgroundWorker), ts.Config)
 		wg := sync.WaitGroup{}
 		wg.Add(1)
 		ctx, cancel := context.WithCancel(context.Background())

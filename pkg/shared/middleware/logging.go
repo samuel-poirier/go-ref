@@ -16,7 +16,7 @@ func (w *wrappedResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-func logging(logger *slog.Logger, next http.Handler) http.Handler {
+func logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wrapped := &wrappedResponseWriter{
 			ResponseWriter: w,
@@ -28,7 +28,7 @@ func logging(logger *slog.Logger, next http.Handler) http.Handler {
 		duration := time.Since(start)
 
 		// Use InfoContext to include trace context from the request
-		logger.InfoContext(
+		slog.InfoContext(
 			r.Context(),
 			"handled request",
 			slog.String("method", r.Method),
@@ -41,8 +41,8 @@ func logging(logger *slog.Logger, next http.Handler) http.Handler {
 
 // Logging middleware is used to write log information out to the console
 // on each request/response.
-func Logging(logger *slog.Logger) Middleware {
+func Logging() Middleware {
 	return func(next http.Handler) http.Handler {
-		return logging(logger, next)
+		return logging(next)
 	}
 }
