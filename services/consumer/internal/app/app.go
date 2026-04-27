@@ -12,6 +12,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	postprocessed "github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/post_processed"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/processed"
+	sagaactivities "github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/saga/activities"
+	sagaorchestrator "github.com/samuel-poirier/go-ref/consumer/internal/app/consumers/saga/orchestrator"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-ref/consumer/internal/infra/database"
 	"github.com/samuel-poirier/go-ref/consumer/internal/repository"
@@ -68,6 +70,12 @@ func (a *App) Start(ctx context.Context) error {
 	consumerHandlers := make([]consumer.ConsumerHandler, 0)
 	consumerHandlers = append(consumerHandlers, processed.New(service, ctx))
 	consumerHandlers = append(consumerHandlers, postprocessed.New(service, ctx))
+	consumerHandlers = append(consumerHandlers, sagaorchestrator.NewStartConsumer(service, ctx))
+	consumerHandlers = append(consumerHandlers, sagaorchestrator.NewSucceededConsumer(service, ctx))
+	consumerHandlers = append(consumerHandlers, sagaorchestrator.NewFailedConsumer(service, ctx))
+	consumerHandlers = append(consumerHandlers, sagaorchestrator.NewCompensatedConsumer(service, ctx))
+	consumerHandlers = append(consumerHandlers, sagaactivities.NewProcessItemConsumer(service, ctx))
+	consumerHandlers = append(consumerHandlers, sagaactivities.NewCompensateItemConsumer(service, ctx))
 
 	outboxReader.StartBackgroundReader(ctx)
 
@@ -154,7 +162,7 @@ func registerConsumer(ctx context.Context, handler consumer.ConsumerHandler, msg
 		err := msgConsumer.Subscribe(handler.GetQueueName(), &subscribeMsgChan, ctx)
 
 		if err != nil {
-			slog.Warn("failed to consumer, retrying...", slog.String("queue", handler.GetQueueName()), slog.String("handler", fmt.Sprintf("%T", handler)))
+			slog.Warn("failed to consume, retrying...", slog.String("queue", handler.GetQueueName()), slog.String("handler", fmt.Sprintf("%T", handler)))
 			time.Sleep(500 * time.Millisecond)
 		}
 

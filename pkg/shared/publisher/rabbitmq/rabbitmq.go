@@ -17,6 +17,7 @@ import (
 type messageWithContext struct {
 	ctx     context.Context
 	message publisher.MessageEnvelope
+	result  chan<- error
 }
 
 type RabbitMqPublisher struct {
@@ -36,8 +37,18 @@ func (pub *RabbitMqPublisher) Publish(ctx context.Context, message publisher.Mes
 	if pub.eventChannel == nil {
 		return fmt.Errorf("failed to publish, publishing channel not initialized")
 	}
-	*pub.eventChannel <- messageWithContext{ctx: ctx, message: message}
-	return nil
+	resultCh := make(chan error, 1)
+	select {
+	case *pub.eventChannel <- messageWithContext{ctx: ctx, message: message, result: resultCh}:
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+	select {
+	case err := <-resultCh:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (publisher *RabbitMqPublisher) Close() {
@@ -94,7 +105,8 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 			msgWithCtx := messageBuffer[0]
 			messageBuffer = messageBuffer[1:]
 
-			// Start a new span for publishing, using the provided context to link to parent span
+			ch, conn = ensureChannelIsOpen(msgWithCtx.ctx, ch, conn, pub)
+
 			spanCtx, span := tracer.Start(msgWithCtx.ctx, "rabbitmq.publish",
 				trace.WithSpanKind(trace.SpanKindProducer),
 				trace.WithAttributes(
@@ -105,12 +117,12 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 			)
 
 			q, err := ch.QueueDeclare(
-				msgWithCtx.message.QueueName, // name
-				true,                         // durable
-				false,                        // delete when unused
-				false,                        // exclusive
-				false,                        // no-wait
-				nil,                          // arguments
+				msgWithCtx.message.QueueName,
+				true,
+				false,
+				false,
+				false,
+				nil,
 			)
 
 			if err != nil {
@@ -118,12 +130,10 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 				span.RecordError(err)
 				span.SetStatus(codes.Error, "failed to declare queue")
 				span.End()
+				msgWithCtx.result <- err
 				continue
 			}
 
-			ch, conn = ensureChannelIsOpen(spanCtx, ch, conn, pub)
-
-			// Inject trace context into message headers
 			headers := make(amqp091.Table)
 			propagator := otel.GetTextMapPropagator()
 			propagator.Inject(spanCtx, &amqpHeaderCarrier{headers: headers})
@@ -147,6 +157,7 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 				span.SetStatus(codes.Ok, "message published successfully")
 			}
 			span.End()
+			msgWithCtx.result <- err
 		}
 	}()
 
@@ -158,6 +169,12 @@ func (pub *RabbitMqPublisher) Initialize(ctx context.Context) error {
 func ensureChannelIsOpen(ctx context.Context, ch *amqp091.Channel, conn *amqp091.Connection, publisher *RabbitMqPublisher) (*amqp091.Channel, *amqp091.Connection) {
 	var err error
 	for ch == nil || ch.IsClosed() {
+		select {
+		case <-ctx.Done():
+			return ch, conn
+		default:
+		}
+
 		conn, err = amqp091.Dial(publisher.connectionString)
 
 		if err != nil {
