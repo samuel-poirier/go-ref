@@ -152,6 +152,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/saga/items": {
+            "post": {
+                "description": "Triggers an orchestrated saga that processes an item through pending, processing, and terminal states",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Start a new item saga",
+                "parameters": [
+                    {
+                        "description": "Item data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_app_api_saga.startItemSagaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorModel"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -165,6 +211,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "processedData": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_app_api_saga.startItemSagaRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
                     "type": "string"
                 }
             }

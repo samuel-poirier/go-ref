@@ -24,3 +24,20 @@ type ProcessedItem struct {
 	ProcessedAt   time.Time
 	ProcessedData string
 }
+
+type SagaInstance struct {
+	ID        uuid.UUID
+	Status    string
+	Payload   []byte
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type SagaStep struct {
+	ID        uuid.UUID
+	SagaID    uuid.UUID
+	StepName  string
+	Status    string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}

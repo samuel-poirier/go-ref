@@ -6,6 +6,7 @@ import (
 
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/api/health"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/api/processed"
+	"github.com/samuel-poirier/go-ref/consumer/internal/app/api/saga"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app/service"
 	"github.com/samuel-poirier/go-ref/shared/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -18,12 +19,14 @@ func (a *App) loadRoutes(service *service.Service) (http.Handler, error) {
 
 	healthHandler := health.NewHandler()
 	processedHandler := processed.NewHandler(service)
+	sagaHandler := saga.NewHandler(service)
 
 	v1 := http.NewServeMux()
 	v1.HandleFunc("GET /api/v1/hc", healthHandler.HealthCheck)
 	v1.HandleFunc("GET /api/v1/items/processed", processedHandler.ProcessedItems)
 	v1.HandleFunc("GET /api/v1/items/processed/count", processedHandler.CountProcessedItems)
 	v1.HandleFunc("GET /api/v1/items/processed/{id}", processedHandler.FindProcessedItemById)
+	v1.HandleFunc("POST /api/v1/saga/items", sagaHandler.StartItemSaga)
 
 	swaggerEndpoints := http.NewServeMux()
 

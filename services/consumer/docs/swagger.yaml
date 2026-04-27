@@ -9,6 +9,11 @@ definitions:
       processedData:
         type: string
     type: object
+  internal_app_api_saga.startItemSagaRequest:
+    properties:
+      data:
+        type: string
+    type: object
   response.ErrorDetail:
     properties:
       location:
@@ -163,4 +168,35 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorModel'
       summary: Endpoint to count processed items
+  /api/v1/saga/items:
+    post:
+      consumes:
+      - application/json
+      description: Triggers an orchestrated saga that processes an item through pending,
+        processing, and terminal states
+      parameters:
+      - description: Item data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api_saga.startItemSagaRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorModel'
+      summary: Start a new item saga
 swagger: "2.0"

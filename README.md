@@ -89,7 +89,7 @@ _\*: Unit of work can be omitted if we only execute queries_
 | 16 | Database transactions | x |
 | 17 | Database migrations | x |
 | 18 | Database data seeding | |
-| 19 | Saga Pattern | |
+| 19 | Saga Pattern | x |
 | 20 | Unit of Work Pattern | x |
 | 21 | OpenAPI Documentation | x |
 | 22 | Problem Details+json validation ([RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457)) | x |
