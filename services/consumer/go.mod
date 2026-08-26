@@ -1,16 +1,6 @@
 module github.com/samuel-poirier/go-ref/consumer
 
-go 1.26.0
-
-require (
-	github.com/google/uuid v1.6.0
-	github.com/joho/godotenv v1.5.1
-	github.com/samuel-poirier/go-ref/events v0.0.0-00010101000000-000000000000
-	github.com/samuel-poirier/go-ref/shared v0.0.0-00010101000000-000000000000
-	github.com/stretchr/testify v1.11.1
-	github.com/swaggo/http-swagger/v2 v2.0.2
-	github.com/swaggo/swag v1.16.6
-)
+go 1.27.0
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -71,8 +61,15 @@ require (
 require (
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
+	github.com/joho/godotenv v1.5.1
 	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/samuel-poirier/go-ref/events v0.0.0-00010101000000-000000000000
+	github.com/samuel-poirier/go-ref/shared v0.0.0-00010101000000-000000000000
+	github.com/stretchr/testify v1.11.1
+	github.com/swaggo/http-swagger/v2 v2.0.2
+	github.com/swaggo/swag v1.16.6
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.67.0
 	go.opentelemetry.io/otel v1.42.0
 	go.opentelemetry.io/otel/trace v1.42.0

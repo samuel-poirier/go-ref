@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"maps"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/samuel-poirier/go-ref/consumer/internal/app"
@@ -87,10 +88,8 @@ func (c *RabbitMqConsumer) Subscribe(queueName string, msgChan *chan<- consumer.
 		)
 
 		// Convert AMQP headers to map
-		headers := make(map[string]interface{})
-		for k, v := range d.Headers {
-			headers[k] = v
-		}
+		headers := make(map[string]any)
+		maps.Copy(headers, d.Headers)
 
 		message := &consumer.Message{
 			Data:        d.Body,

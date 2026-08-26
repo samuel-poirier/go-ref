@@ -51,9 +51,7 @@ func (handler *Handler) ProcessedItems(w http.ResponseWriter, r *http.Request) {
 		Limit:  int32(limit),
 	})
 
-	var validateErrs validator.ValidationErrors
-
-	if errors.As(err, &validateErrs) {
+	if validateErrs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 		response.WriteJsonBadRequestFromValidationErrors(w, validateErrs)
 		return
 	}
