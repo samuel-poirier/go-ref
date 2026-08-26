@@ -179,8 +179,7 @@ func (e *errWithHeaders) GetHeaders() http.Header {
 // ErrorWithHeaders wraps an error with additional headers to be sent to the
 // client. This is useful for e.g. caching, rate limiting, or other metadata.
 func ErrorWithHeaders(err error, headers http.Header) error {
-	var he HeadersError
-	if errors.As(err, &he) {
+	if he, ok := errors.AsType[HeadersError](err); ok {
 		// There is already a headers error, so we need to merge the headers. This
 		// lets you chain multiple calls together and have all the headers set.
 		orig := he.GetHeaders()
@@ -230,7 +229,7 @@ func ErrorWithHeaders(err error, headers http.Header) error {
 //	}
 var NewError = func(status int, msg string, errs ...error) *ErrorModel {
 	details := make([]*ErrorDetail, len(errs))
-	for i := 0; i < len(errs); i++ {
+	for i := range errs {
 		if converted, ok := errs[i].(ErrorDetailer); ok {
 			details[i] = converted.ErrorDetail()
 		} else {
